@@ -1,0 +1,25 @@
+# Local settings / secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.venv/
+venv/
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+# generated
+*.log

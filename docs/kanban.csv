@@ -1,0 +1,29 @@
+﻿ID,Tarea,Rol propuesto,Criterios de aceptacion,Estado,Etapa
+1,"Configurar repositorio, ramas y README",Lider tecnico,"Repositorio organizado, README valido y PR template",Por hacer,E2
+2,Crear tablero Kanban y asignar responsables,Lider tecnico,"Tablero creado, tarjetas con responsable y criterios de aceptacion",Por hacer,E2
+3,Configurar CI de backend y frontend,Lider tecnico,GitHub Actions valida Pytest y build de React,Por hacer,E2
+4,"Configurar Compose postgres, mailpit, backend, frontend",Ejecucion/DevOps,docker compose up --build inicia cuatro servicios,Por hacer,E2
+5,Definir tokens y manejo de posiciones,Lenguaje,Tokens del documento reconocidos con linea y columna,Hecho (local),E3
+6,Implementar lexer y errores lexicos,Lenguaje,ENCENDER led1@ produce error de caracter,Hecho (local),E3
+7,Implementar parser EBNF,Lenguaje,Comandos validos aceptados e incompletos rechazados,Backlog,E4
+8,Implementar AST de instrucciones simples y SI,Lenguaje,"AST tipado para control, consulta, correo y condicion",Backlog,E4
+9,Crear esquema y migracion inicial PostgreSQL,Backend/API,Cinco dispositivos precargados; datos persistentes,Backlog,E5
+10,Construir tabla de simbolos desde persistencia,Semantica,"Registra tipos, estados y operaciones permitidas",Backlog,E5
+11,Implementar validaciones semanticas,Semantica,Dispositivo inexistente y operacion incompatible informados,Backlog,E6
+12,Validar todo el programa antes de ejecutarlo,Semantica,Ninguna linea se ejecuta cuando hay error de validacion,Backlog,E6
+13,Definir generador de instrucciones intermedias,Semantica,"IR para SET_STATE, GET_STATE, COMPARE, saltos, correo y notificacion",Backlog,E7
+14,Implementar VM/motor de ejecucion,Ejecucion/DevOps,Las instrucciones intermedias actualizan estados y consultas,Backlog,E8
+15,Implementar condicionales,Ejecucion/DevOps,La condicion lee estado actual y omite acciones falsas,Backlog,E8
+16,Optimizar asignaciones redundantes,Ejecucion/DevOps,Reduce SET_STATE idempotentes sin alterar resultados observables,Backlog,E9
+17,Optimizar asignaciones sobrescritas,Ejecucion/DevOps,Solo elimina escrituras sin lecturas ni efectos intermedios,Backlog,E9
+18,Crear API de ejecucion y errores estructurados,Backend/API,POST recibe multiples lineas y responde resultados o errores,Backlog,E10
+19,"Crear API de dispositivos, historial y notificaciones",Backend/API,GET expone datos persistentes verificables,Backlog,E10
+20,Construir consola React y resultado de errores,Frontend,Editor de varias lineas y resultado por instruccion,Backlog,E10
+21,Construir panel visual de 5 dispositivos,Frontend,Estado visible cambia tras ejecutar y persiste tras refresh,Backlog,E10
+22,Construir vista de historial y notificaciones,Frontend,Muestra historial ordenado y mensajes registrados,Backlog,E10
+23,Implementar NOTIFICAR,Backend/API,Mensaje creado y visible en notificaciones,Backlog,E11
+24,Integrar SMTP Mailpit,Backend/API,Correo generado aparece en bandeja Mailpit de pruebas,Backlog,E11
+25,"Pruebas de lexer, parser, AST y semantica",Lenguaje,Casos validos/invalidos automatizados con Pytest,Backlog,E12
+26,Pruebas de equivalencia del optimizador,Ejecucion/DevOps,Mismos efectos observables antes y despues,Backlog,E12
+27,"Pruebas de API, DB y SMTP",Backend/API,Cobertura de integracion y escenarios del PDF,Backlog,E12
+28,Documentacion y presentacion final,Lider tecnico,"Explica todas las unidades, arquitectura, pruebas y despliegue",Backlog,E12

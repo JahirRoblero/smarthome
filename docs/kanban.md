@@ -1,0 +1,58 @@
+# Tablero Kanban local (pendiente de publicar en GitHub Projects)
+
+- [ ] **#01 · Configurar repositorio, ramas y README** — Lider tecnico · E2
+  - Aceptacion: Repositorio organizado, README valido y PR template
+- [ ] **#02 · Crear tablero Kanban y asignar responsables** — Lider tecnico · E2
+  - Aceptacion: Tablero creado, tarjetas con responsable y criterios de aceptacion
+- [ ] **#03 · Configurar CI de backend y frontend** — Lider tecnico · E2
+  - Aceptacion: GitHub Actions valida Pytest y build de React
+- [ ] **#04 · Configurar Compose postgres, mailpit, backend, frontend** — Ejecucion/DevOps · E2
+  - Aceptacion: docker compose up --build inicia cuatro servicios
+- [x] **#05 · Definir tokens y manejo de posiciones** — Lenguaje · E3
+  - Aceptacion: Tokens del documento reconocidos con linea y columna
+- [x] **#06 · Implementar lexer y errores lexicos** — Lenguaje · E3
+  - Aceptacion: ENCENDER led1@ produce error de caracter
+- [ ] **#07 · Implementar parser EBNF** — Lenguaje · E4
+  - Aceptacion: Comandos validos aceptados e incompletos rechazados
+- [ ] **#08 · Implementar AST de instrucciones simples y SI** — Lenguaje · E4
+  - Aceptacion: AST tipado para control, consulta, correo y condicion
+- [ ] **#09 · Crear esquema y migracion inicial PostgreSQL** — Backend/API · E5
+  - Aceptacion: Cinco dispositivos precargados; datos persistentes
+- [ ] **#10 · Construir tabla de simbolos desde persistencia** — Semantica · E5
+  - Aceptacion: Registra tipos, estados y operaciones permitidas
+- [ ] **#11 · Implementar validaciones semanticas** — Semantica · E6
+  - Aceptacion: Dispositivo inexistente y operacion incompatible informados
+- [ ] **#12 · Validar todo el programa antes de ejecutarlo** — Semantica · E6
+  - Aceptacion: Ninguna linea se ejecuta cuando hay error de validacion
+- [ ] **#13 · Definir generador de instrucciones intermedias** — Semantica · E7
+  - Aceptacion: IR para SET_STATE, GET_STATE, COMPARE, saltos, correo y notificacion
+- [ ] **#14 · Implementar VM/motor de ejecucion** — Ejecucion/DevOps · E8
+  - Aceptacion: Las instrucciones intermedias actualizan estados y consultas
+- [ ] **#15 · Implementar condicionales** — Ejecucion/DevOps · E8
+  - Aceptacion: La condicion lee estado actual y omite acciones falsas
+- [ ] **#16 · Optimizar asignaciones redundantes** — Ejecucion/DevOps · E9
+  - Aceptacion: Reduce SET_STATE idempotentes sin alterar resultados observables
+- [ ] **#17 · Optimizar asignaciones sobrescritas** — Ejecucion/DevOps · E9
+  - Aceptacion: Solo elimina escrituras sin lecturas ni efectos intermedios
+- [ ] **#18 · Crear API de ejecucion y errores estructurados** — Backend/API · E10
+  - Aceptacion: POST recibe multiples lineas y responde resultados o errores
+- [ ] **#19 · Crear API de dispositivos, historial y notificaciones** — Backend/API · E10
+  - Aceptacion: GET expone datos persistentes verificables
+- [ ] **#20 · Construir consola React y resultado de errores** — Frontend · E10
+  - Aceptacion: Editor de varias lineas y resultado por instruccion
+- [ ] **#21 · Construir panel visual de 5 dispositivos** — Frontend · E10
+  - Aceptacion: Estado visible cambia tras ejecutar y persiste tras refresh
+- [ ] **#22 · Construir vista de historial y notificaciones** — Frontend · E10
+  - Aceptacion: Muestra historial ordenado y mensajes registrados
+- [ ] **#23 · Implementar NOTIFICAR** — Backend/API · E11
+  - Aceptacion: Mensaje creado y visible en notificaciones
+- [ ] **#24 · Integrar SMTP Mailpit** — Backend/API · E11
+  - Aceptacion: Correo generado aparece en bandeja Mailpit de pruebas
+- [ ] **#25 · Pruebas de lexer, parser, AST y semantica** — Lenguaje · E12
+  - Aceptacion: Casos validos/invalidos automatizados con Pytest
+- [ ] **#26 · Pruebas de equivalencia del optimizador** — Ejecucion/DevOps · E12
+  - Aceptacion: Mismos efectos observables antes y despues
+- [ ] **#27 · Pruebas de API, DB y SMTP** — Backend/API · E12
+  - Aceptacion: Cobertura de integracion y escenarios del PDF
+- [ ] **#28 · Documentacion y presentacion final** — Lider tecnico · E12
+  - Aceptacion: Explica todas las unidades, arquitectura, pruebas y despliegue

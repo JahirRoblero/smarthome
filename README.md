@@ -4,10 +4,10 @@ Aplicacion web de **Lenguajes y Automatas II** para interpretar instrucciones
 sobre dispositivos simulados. Tecnologias: **React + TypeScript**,
 **Python + FastAPI**, **PostgreSQL** y **Mailpit**, orquestadas con Docker Compose.
 
-> **Estado actual: ETAPA 5 — PostgreSQL y tabla de símbolos preparados.**
-> Lexer, Parser y AST ya están implementados; hay consultas de dispositivos y
-> símbolos. El análisis semántico, IR, optimización y ejecución quedan pendientes.
-> **Aún no controla dispositivos desde comandos.**
+> **Estado actual: ETAPA 6 — Análisis semántico implementado.** Lexer,
+> Parser, AST, PostgreSQL, tabla de símbolos y semántica están preparados.
+> La API POST /api/analizar comprueba comandos y devuelve el AST sin ejecutarlos.
+> **IR, optimizador y ejecución quedan pendientes.**
 
 ## Estructura
 
@@ -119,9 +119,21 @@ Rutas: `/api/dispositivos`, `/api/dispositivos/{identificador}` y
 `/api/tabla-simbolos`. Se puede revisar la persistencia siguiendo
 `docs/ETAPA_5_POSTGRES_SIMBOLOS.md`.
 
+## Análisis semántico (Etapa 6)
+
+Desde Bruno enviar **POST** a `http://localhost:8000/api/analizar` con Body JSON:
+
+```json
+{"codigo":"ENCENDER led1\nCONSULTAR led1"}
+```
+
+La API responde con AST validado o con errores LEXICO, SINTACTICO o SEMANTICO
+ubicados por línea y columna. Este análisis **no cambia estados ni envía correos**.
+
 ## Documentacion y plan de desarrollo
 
 - [Diseno formal del lenguaje](docs/Diseno_lenguaje_SmartHome.pdf)
+- [Etapa 6: Análisis semántico](docs/ETAPA_6_ANALISIS_SEMANTICO.md)
 - [Etapa 5: PostgreSQL y tabla de símbolos](docs/ETAPA_5_POSTGRES_SIMBOLOS.md)
 - [Etapa 4: Parser y AST](docs/ETAPA_4_PARSER_AST.md)
 - [Etapa 3: Lexer, ejemplos y pruebas](docs/ETAPA_3_LEXER.md)

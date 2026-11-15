@@ -4,10 +4,10 @@ Aplicacion web de **Lenguajes y Automatas II** para interpretar instrucciones
 sobre dispositivos simulados. Tecnologias: **React + TypeScript**,
 **Python + FastAPI**, **PostgreSQL** y **Mailpit**, orquestadas con Docker Compose.
 
-> **Estado actual: ETAPA 3 — Lexer completo.** La interfaz sigue comprobando
-> la conexión de servicios. `lexer.py` reconoce tokens y errores léxicos; el
-> parser, AST, semántica, IR, optimizador y ejecutor quedan pendientes.
-> **Aún no controla dispositivos.**
+> **Estado actual: ETAPA 5 — PostgreSQL y tabla de símbolos preparados.**
+> Lexer, Parser y AST ya están implementados; hay consultas de dispositivos y
+> símbolos. El análisis semántico, IR, optimización y ejecución quedan pendientes.
+> **Aún no controla dispositivos desde comandos.**
 
 ## Estructura
 
@@ -97,11 +97,33 @@ python -m pytest -q tests/test_lexer.py
 ```
 
 Se muestran tokens y errores en JSON. El comando devuelve código de salida 1
-ante un error léxico, como debe ser. `parser.py` aún no está implementado.
+ante un error léxico, como debe ser. `parser.py` ya genera el AST sin ejecutar operaciones.
+
+### Preparar PostgreSQL y mostrar los dispositivos
+
+Con Docker Compose el backend ejecuta la inicialización automáticamente:
+
+```bash
+docker compose up --build
+```
+
+Sin Docker, con PostgreSQL local preparado:
+
+```bash
+cd backend
+python -m app.db.initialize
+uvicorn app.main:app --reload
+```
+
+Rutas: `/api/dispositivos`, `/api/dispositivos/{identificador}` y
+`/api/tabla-simbolos`. Se puede revisar la persistencia siguiendo
+`docs/ETAPA_5_POSTGRES_SIMBOLOS.md`.
 
 ## Documentacion y plan de desarrollo
 
 - [Diseno formal del lenguaje](docs/Diseno_lenguaje_SmartHome.pdf)
+- [Etapa 5: PostgreSQL y tabla de símbolos](docs/ETAPA_5_POSTGRES_SIMBOLOS.md)
+- [Etapa 4: Parser y AST](docs/ETAPA_4_PARSER_AST.md)
 - [Etapa 3: Lexer, ejemplos y pruebas](docs/ETAPA_3_LEXER.md)
 - [Arquitectura y limites](docs/arquitectura.md)
 - [Roles del equipo](docs/roles-equipo.md)

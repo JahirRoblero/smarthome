@@ -4,10 +4,10 @@ Aplicacion web de **Lenguajes y Automatas II** para interpretar instrucciones
 sobre dispositivos simulados. Tecnologias: **React + TypeScript**,
 **Python + FastAPI**, **PostgreSQL** y **Mailpit**, orquestadas con Docker Compose.
 
-> **Estado actual: ETAPA 6 — Análisis semántico implementado.** Lexer,
-> Parser, AST, PostgreSQL, tabla de símbolos y semántica están preparados.
-> La API POST /api/analizar comprueba comandos y devuelve el AST sin ejecutarlos.
-> **IR, optimizador y ejecución quedan pendientes.**
+> **Estado actual: ETAPA 7 — Código intermedio (IR) implementado.**
+> El backend analiza los comandos y genera instrucciones internas con
+> `POST /api/compilar`. Todavía **no ejecuta acciones**: ejecutor y
+> optimizador siguen pendientes.
 
 ## Estructura
 
@@ -130,9 +130,22 @@ Desde Bruno enviar **POST** a `http://localhost:8000/api/analizar` con Body JSON
 La API responde con AST validado o con errores LEXICO, SINTACTICO o SEMANTICO
 ubicados por línea y columna. Este análisis **no cambia estados ni envía correos**.
 
+### Generación de código intermedio (Etapa 7)
+
+Enviar POST a `http://localhost:8000/api/compilar` con Body JSON:
+
+```json
+{"codigo":"ENCENDER led1\nSI led1 == ENCENDIDO ENTONCES APAGAR led1"}
+```
+
+El IR contiene instrucciones numeradas, temporales y saltos condicionales.
+No modifica los estados ni envía correos. Más detalles en
+`docs/ETAPA_7_CODIGO_INTERMEDIO.md`.
+
 ## Documentacion y plan de desarrollo
 
 - [Diseno formal del lenguaje](docs/Diseno_lenguaje_SmartHome.pdf)
+- [Etapa 7: Código intermedio (IR)](docs/ETAPA_7_CODIGO_INTERMEDIO.md)
 - [Etapa 6: Análisis semántico](docs/ETAPA_6_ANALISIS_SEMANTICO.md)
 - [Etapa 5: PostgreSQL y tabla de símbolos](docs/ETAPA_5_POSTGRES_SIMBOLOS.md)
 - [Etapa 4: Parser y AST](docs/ETAPA_4_PARSER_AST.md)

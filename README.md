@@ -4,17 +4,16 @@ Aplicacion web de **Lenguajes y Automatas II** para interpretar instrucciones
 sobre dispositivos simulados. Tecnologias: **React + TypeScript**,
 **Python + FastAPI**, **PostgreSQL** y **Mailpit**, orquestadas con Docker Compose.
 
-> **Estado actual: ETAPA 7 — Código intermedio (IR) implementado.**
-> El backend analiza los comandos y genera instrucciones internas con
-> `POST /api/compilar`. Todavía **no ejecuta acciones**: ejecutor y
-> optimizador siguen pendientes.
+> **Estado actual: aplicación web integrada con ejecución IR, historial y notificaciones.**
+> SmartHome funciona desde React y conserva los estados en PostgreSQL.
+> Las **optimizaciones del IR** siguen pendientes (Etapa 9).
 
 ## Estructura
 
 ```text
 smarthome/
 ├── frontend/                 React + TypeScript + Vite
-├── backend/                  FastAPI, pruebas y lexer implementado
+├── backend/                  FastAPI, intérprete, motor IR, persistencia y pruebas
 ├── docs/                     Especificacion PDF, arquitectura, tablero, roles
 ├── .github/                  CI, plantilla de PR e issues
 ├── compose.yaml              React + FastAPI + PostgreSQL + Mailpit
@@ -141,6 +140,23 @@ Enviar POST a `http://localhost:8000/api/compilar` con Body JSON:
 El IR contiene instrucciones numeradas, temporales y saltos condicionales.
 No modifica los estados ni envía correos. Más detalles en
 `docs/ETAPA_7_CODIGO_INTERMEDIO.md`.
+
+### Aplicación web y ejecución de SmartHome
+
+Tras `docker compose up --build -d`, entrar en `http://localhost:5173`.
+La consola permite ejecutar instrucciones y muestra resultados, historial y
+notificaciones guardados. Los botones rápidos utilizan el mismo intérprete.
+
+Enviar POST a `http://localhost:8000/api/ejecutar` con JSON:
+
+```json
+{"codigo":"ENCENDER led1\nCONSULTAR led1"}
+```
+
+La API valida todo el programa, genera el IR y lo ejecuta. También están
+disponibles GET `/api/historial` y GET `/api/notificaciones`.
+
+Consulta la [guía completa](docs/INTEGRACION_WEB_SMARTHOME.md).
 
 ## Documentacion y plan de desarrollo
 

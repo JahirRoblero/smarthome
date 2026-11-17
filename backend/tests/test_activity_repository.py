@@ -1,5 +1,6 @@
 """Pruebas de consultas del historial y notificaciones sin PostgreSQL real."""
 from datetime import datetime, timezone
+import json
 from app.db import activity_repository as repo
 
 
@@ -45,3 +46,38 @@ def test_notificaciones(monkeypatch):
     monkeypatch.setattr(repo, "abrir_conexion", lambda: conexion)
     assert repo.listar_notificaciones(5) == [{"id": 3, "mensaje": "Alerta", "fecha": fecha}]
     assert conexion.cursor_fake.params == (5,)
+
+
+def test_registra_error_en_transaccion_independiente(monkeypatch):
+    conexion = Connection([])
+    monkeypatch.setattr(repo, "abrir_conexion", lambda: conexion)
+    repo.registrar_error_ejecucion(
+        "ENCENDER led1\nENCENDER alarma1",
+        {
+            "tipo": "SEMANTICO", "linea": 2, "columna": 1,
+            "descripcion": "Las alarmas solo admiten ACTIVAR / DESACTIVAR.",
+        },
+    )
+    sql = conexion.cursor_fake.sql
+    instruccion, resultado, estado = conexion.cursor_fake.params
+    assert "INSERT INTO historial" in sql
+    assert instruccion == "ENCENDER alarma1"
+    assert estado == "ERROR"
+    datos = json.loads(resultado)
+    assert datos["estado"] == "ERROR"
+    assert datos["tipo"] == "SEMANTICO"
+    assert datos["linea"] == 2
+    assert "ACTIVAR / DESACTIVAR" in datos["detalle"]
+
+
+def test_error_sin_linea_usa_texto_original(monkeypatch):
+    conexion = Connection([])
+    monkeypatch.setattr(repo, "abrir_conexion", lambda: conexion)
+    repo.registrar_error_ejecucion("  ENCENDER led1@  ", {
+        "tipo": "LEXICO",
+        "descripcion": "Carácter inválido",
+    })
+    instruccion, resultado, estado = conexion.cursor_fake.params
+    assert instruccion == "ENCENDER led1@"
+    assert json.loads(resultado)["tipo"] == "LEXICO"
+    assert estado == "ERROR"

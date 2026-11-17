@@ -597,6 +597,16 @@ td code {
 .texto-tenue {
   color: #957633;
 }
+.texto-error,
+.celda-resultado-error {
+  color: #b42330;
+}
+.texto-error {
+  font-weight: 700;
+}
+.celda-estado {
+  white-space: nowrap;
+}
 .sin-registros {
   font-size: 13px;
   color: #7a8793;

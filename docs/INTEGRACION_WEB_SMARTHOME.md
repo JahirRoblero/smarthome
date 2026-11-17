@@ -66,6 +66,8 @@ El resultado se registra como correcto solo después de entregar el mensaje al S
 ## Persistencia
 
 - Los estados, el historial y las notificaciones utilizan las tres tablas de la Etapa 5.
+- POST /api/ejecutar también guarda en `historial` los intentos con errores léxicos, sintácticos, semánticos y de ejecución (`estado_ejecucion = ERROR`), junto con la instrucción responsable y el mensaje de diagnóstico. POST /api/analizar y POST /api/compilar siguen siendo de solo lectura.
+- Si la ejecución IR falla, la transacción de dispositivos se revierte; el error se registra a continuación en una nueva transacción. Los errores de infraestructura o de formato HTTP no se insertan cuando no hay una ejecución válida que registrar.
 - docker compose restart backend reinicia FastAPI sin borrar datos.
 - docker compose down conserva el volumen PostgreSQL.
 - **No ejecutar docker compose down -v** si deseas conservar los datos.

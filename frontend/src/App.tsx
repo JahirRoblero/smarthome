@@ -739,18 +739,20 @@ export default function App() {
                       <td>
                         <code>{item.instruccion}</code>
                       </td>
-                      <td>
+                      <td className={item.estado_ejecucion === "ERROR" ? "celda-resultado-error" : undefined}>
                         {typeof item.resultado === "object" &&
                         item.resultado !== null
                           ? item.resultado.detalle
                           : (item.resultado ?? "—")}
                       </td>
-                      <td>
+                      <td className="celda-estado">
                         <span
                           className={
                             item.estado_ejecucion === "EXITOSA"
                               ? "texto-exito"
-                              : "texto-tenue"
+                              : item.estado_ejecucion === "ERROR"
+                                ? "texto-error"
+                                : "texto-tenue"
                           }
                         >
                           {item.estado_ejecucion}

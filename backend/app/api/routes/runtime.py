@@ -3,10 +3,11 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, BackgroundTasks, Query
 from fastapi.responses import JSONResponse
 
 from app.api.routes.semantic import SolicitudPrograma
+from app.core.push_notifications import enviar_notificaciones_push
 from app.db.activity_repository import listar_historial, listar_notificaciones, registrar_error_ejecucion
 from app.db.devices_repository import listar_dispositivos
 from app.interpreter.executor import ErrorEjecucion, ejecutar_ir
@@ -28,7 +29,7 @@ def guardar_error(codigo: str, error: ErrorLexico | ErrorSintactico | ErrorSeman
 
 
 @router.post("/ejecutar")
-def ejecutar(solicitud: SolicitudPrograma):
+def ejecutar(solicitud: SolicitudPrograma, background_tasks: BackgroundTasks):
     """Compila, valida y ejecuta exclusivamente el código intermedio."""
     if len(solicitud.codigo) > 20000:
         return JSONResponse(
@@ -55,6 +56,11 @@ def ejecutar(solicitud: SolicitudPrograma):
     try:
         resultado = ejecutar_ir(programa_ir, solicitud.codigo)
         resultado["dispositivos"] = listar_dispositivos()
+        # La transacción del intérprete terminó: entregar solo avisos confirmados.
+        ids = [evento["notificacion_id"] for evento in resultado["resultados"]
+               if evento.get("estado") == "EXITOSA" and "notificacion_id" in evento]
+        if ids:
+            background_tasks.add_task(enviar_notificaciones_push, ids)
         return resultado
     except ErrorEjecucion as error:
         # El ejecutor ha revertido su transacción; guardamos ERROR aparte.

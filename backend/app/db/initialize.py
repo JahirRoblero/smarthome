@@ -22,7 +22,7 @@ def inicializar_base_de_datos() -> None:
 
 def main() -> None:
     inicializar_base_de_datos()
-    print("Esquema SmartHome preparado: dispositivos, historial y notificaciones.")
+    print("Esquema SmartHome preparado: dispositivos, historial, notificaciones y suscripciones Web Push.")
 
 
 if __name__ == "__main__":

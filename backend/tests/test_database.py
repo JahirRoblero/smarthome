@@ -45,10 +45,10 @@ def fila():
     return ("led1", "LED", "APAGADO", datetime(2026, 11, 15, tzinfo=timezone.utc))
 
 
-def test_esquema_crea_tres_tablas():
+def test_esquema_crea_tablas_con_suscripciones_push():
     sql = initialize.ESQUEMA_SQL.read_text(encoding="utf-8")
-    assert sql.count("CREATE TABLE IF NOT EXISTS") == 3
-    for tabla in ("dispositivos", "historial", "notificaciones"):
+    assert sql.count("CREATE TABLE IF NOT EXISTS") == 4
+    for tabla in ("dispositivos", "historial", "notificaciones", "push_suscripciones"):
         assert f"CREATE TABLE IF NOT EXISTS {tabla}" in sql
     assert "estado_compatible_tipo" in sql
     assert "ON CONFLICT (identificador) DO NOTHING" in sql

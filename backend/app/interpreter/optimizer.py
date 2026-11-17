@@ -55,7 +55,9 @@ def optimizar_programa(
 
                 if actual == siguiente and redundantes:
                     tecnica = "redundantes"
-                elif actual != final and sobrescritas:
+                elif sobrescritas and (redundantes or actual != final):
+                    # Con ambas técnicas activas, toda asignación anterior
+                    # queda sobrescrita por la última del bloque.
                     tecnica = "sobrescritas"
                 else:
                     continue

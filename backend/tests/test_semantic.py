@@ -72,6 +72,19 @@ def test_error_semantico(tabla, codigo, fragmento):
     assert set(error.a_diccionario()) == {"tipo", "linea", "columna", "descripcion"}
 
 
+@pytest.mark.parametrize("codigo,mensaje", [
+    ("ENCENDER alarma1", "Las alarmas solo admiten ACTIVAR / DESACTIVAR."),
+    ("APAGAR puerta_principal", "Las puertas solo admiten ABRIR / CERRAR."),
+    ("ACTIVAR led1", "Los LED solo admiten ENCENDER / APAGAR."),
+    ("ACTIVAR luz_sala", "Las luces solo admiten ENCENDER / APAGAR."),
+    ("CERRAR ventilador1", "Los ventiladores solo admiten ENCENDER / APAGAR."),
+])
+def test_error_indica_acciones_permitidas(tabla, codigo, mensaje):
+    with pytest.raises(ErrorSemantico) as captura:
+        analizar_semantico(codigo, tabla)
+    assert mensaje in captura.value.descripcion
+
+
 def test_rechaza_programa_completo_sin_efectos(tabla):
     original = [(s.identificador, s.estado) for s in tabla.listar()]
     with pytest.raises(ErrorSemantico) as captura:

@@ -78,8 +78,24 @@ class AnalizadorSemantico:
             if not isinstance(nodo.operacion, str):
                 self._error("la operación debe ser texto.", nodo)
             if nodo.operacion not in simbolo.operaciones_permitidas:
+                # CONSULTAR es una operación general, no una acción de control.
+                acciones = [
+                    operacion for operacion in simbolo.operaciones_permitidas
+                    if operacion != "CONSULTAR"
+                ]
+                tipos = {
+                    "LED": "Los LED",
+                    "LUZ": "Las luces",
+                    "VENTILADOR": "Los ventiladores",
+                    "ALARMA": "Las alarmas",
+                    "PUERTA": "Las puertas",
+                }
+                sujeto = tipos.get(simbolo.tipo, f"Los dispositivos {simbolo.tipo}")
+                permitidas = " / ".join(acciones)
                 self._error(
-                    f"operación {nodo.operacion} incompatible con {simbolo.tipo}.", nodo
+                    f"operación {nodo.operacion} incompatible con {simbolo.tipo}. "
+                    f"{sujeto} solo admiten {permitidas}.",
+                    nodo,
                 )
             return
 

@@ -734,3 +734,65 @@ td code {
   width: 70%;
   height: auto;
 }
+
+/* Resultados de control: instrucciones reconocidas y confirmación detallada. */
+.evento-completo {
+  flex: 1 1 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.evento-reconocimiento {
+  padding: 13px 14px;
+  background: #f4f6fa;
+  border: 1px solid #dce4ed;
+  border-radius: 5px;
+}
+.evento-reconocimiento p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 3px 0;
+  font-size: 12px;
+  color: #526174;
+}
+.evento-reconocimiento strong {
+  color: #253858;
+  font-weight: 600;
+}
+.evento-reconocimiento .valor-correcto {
+  color: #247343;
+}
+.evento-confirmacion {
+  margin: 0;
+  padding: 11px 12px;
+  background: #edf8f0;
+  color: #247343;
+  border: 1px solid #c5e7cf;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: 600;
+}
+.resultado-error .error-instruccion {
+  margin-top: 10px;
+}
+.resultado-error .error-instruccion code {
+  color: #7b2c2c;
+  overflow-wrap: anywhere;
+}
+.resultado-error .error-validacion {
+  font-weight: 600;
+}
+.resultado-error .error-validacion strong {
+  color: #bd2929;
+}
+.resultado-error .error-descripcion {
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #f1c5c5;
+  border-radius: 4px;
+  line-height: 1.6;
+}

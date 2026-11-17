@@ -21,6 +21,8 @@ type Evento = {
   operacion: string;
   estado: string;
   detalle: string;
+  dispositivo?: string;
+  valor?: string;
   dispositivos?: { identificador: string; tipo: string; estado: string }[];
 };
 
@@ -63,6 +65,8 @@ type Resultado =
       modo: "error";
       titulo: string;
       descripcion: string;
+      tipo?: string;
+      instruccion?: string;
       linea?: number;
       columna?: number;
       estado?: number;
@@ -224,6 +228,69 @@ function TarjetaDispositivo({
   );
 }
 
+
+const accionesPorEstado: Record<string, string> = {
+  ENCENDIDO: "ENCENDER",
+  APAGADO: "APAGAR",
+  ACTIVADA: "ACTIVAR",
+  DESACTIVADA: "DESACTIVAR",
+  ABIERTA: "ABRIR",
+  CERRADA: "CERRAR",
+};
+
+function DetalleEjecucion({
+  evento,
+  dispositivos,
+}: {
+  evento: Evento;
+  dispositivos: Dispositivo[];
+}) {
+  const identificador = evento.dispositivo;
+  const valor = evento.valor;
+
+  if (!identificador || !valor) {
+    return <span className="evento-texto">{evento.detalle}</span>;
+  }
+
+  const tipo = dispositivos.find(
+    (dispositivo) => dispositivo.identificador === identificador,
+  )?.tipo;
+  const instruccion = accionesPorEstado[valor] ?? evento.operacion;
+  const nombre = nombres[identificador] ?? identificador;
+  const estadoLegible =
+    tipo === "LUZ" && valor === "ENCENDIDO"
+      ? "encendida"
+      : tipo === "LUZ" && valor === "APAGADO"
+        ? "apagada"
+        : valor.toLowerCase();
+
+  return (
+    <div className="evento-completo">
+      <div className="evento-reconocimiento">
+        <p>
+          <span>Instrucción reconocida:</span>
+          <strong>{instruccion}</strong>
+        </p>
+        <p>
+          <span>Dispositivo:</span>
+          <strong>{identificador}</strong>
+        </p>
+        <p>
+          <span>Validación:</span>
+          <strong className="valor-correcto">CORRECTA</strong>
+        </p>
+        <p>
+          <span>Ejecución:</span>
+          <strong className="valor-correcto">{evento.estado}</strong>
+        </p>
+      </div>
+      <p className="evento-confirmacion">
+        {nombre} {estadoLegible} correctamente.
+      </p>
+    </div>
+  );
+}
+
 export default function App() {
   const [dispositivos, setDispositivos] = useState<Dispositivo[]>([]);
   const [historial, setHistorial] = useState<Historial[]>([]);
@@ -326,10 +393,22 @@ export default function App() {
       if (error instanceof ErrorPeticion) {
         setResultado({
           modo: "error",
-          titulo: error.tipo
-            ? `Error ${error.tipo.toLowerCase()}`
-            : "Error al procesar",
+          titulo:
+            error.tipo === "SEMANTICO"
+              ? "Error semántico"
+              : error.tipo === "SINTACTICO"
+                ? "Error sintáctico"
+                : error.tipo === "LEXICO"
+                  ? "Error léxico"
+                  : error.tipo
+                    ? `Error ${error.tipo.toLowerCase()}`
+                    : "Error al procesar",
           descripcion: error.message,
+          tipo: error.tipo,
+          instruccion:
+            error.linea != null
+              ? fuente.split(/\r?\n/)[error.linea - 1]?.trim()
+              : undefined,
           linea: error.linea,
           columna: error.columna,
           estado: error.estado,
@@ -552,7 +631,17 @@ export default function App() {
               ) : resultado.modo === "error" ? (
                 <div className="resultado-error" role="alert">
                   <strong>{resultado.titulo}</strong>
-                  <p>{resultado.descripcion}</p>
+                  {resultado.instruccion && (
+                    <p className="error-instruccion">
+                      Instrucción recibida: <code>{resultado.instruccion}</code>
+                    </p>
+                  )}
+                  {resultado.tipo === "SEMANTICO" && (
+                    <p className="error-validacion">
+                      Validación: <strong>ERROR</strong>
+                    </p>
+                  )}
+                  <p className="error-descripcion">{resultado.descripcion}</p>
                   {resultado.linea != null && (
                     <small>
                       Línea {resultado.linea}
@@ -582,8 +671,19 @@ export default function App() {
                         <span className="evento-linea">
                           Línea {evento.linea}
                         </span>
-                        <span className="evento-texto">{evento.detalle}</span>
-                        <span className="evento-estado">{evento.estado}</span>
+                        {evento.operacion === "ASIGNAR_ESTADO" &&
+                        evento.dispositivo &&
+                        evento.valor ? (
+                          <DetalleEjecucion
+                            evento={evento}
+                            dispositivos={dispositivos}
+                          />
+                        ) : (
+                          <>
+                            <span className="evento-texto">{evento.detalle}</span>
+                            <span className="evento-estado">{evento.estado}</span>
+                          </>
+                        )}
                         {evento.dispositivos && (
                           <details className="detalle-listado">
                             <summary>Ver lista de dispositivos</summary>

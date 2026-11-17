@@ -2,8 +2,7 @@
 
 Este módulo es el único lugar donde se necesita la clave de Resend.
 No registra credenciales ni expone respuestas internas del proveedor.
-La lista de destinatarios es obligatoria al activar Resend porque la API
-SmartHome todavía no implementa autenticación.
+SmartHome permite enviar a cualquier destinatario cuyo correo sea válido.
 """
 
 from __future__ import annotations
@@ -36,18 +35,6 @@ def _mailpit(destinatario: str, mensaje: str) -> dict[str, str]:
 
 
 def _resend(destinatario: str, mensaje: str) -> dict[str, str]:
-    # Evita utilizar una API sin autenticación como retransmisor abierto.
-    permitidos = {
-        correo.strip().lower()
-        for correo in config.RESEND_ALLOWED_RECIPIENTS.split(",")
-        if correo.strip()
-    }
-    if not permitidos:
-        raise ErrorEnvioCorreo(
-            "Configura RESEND_ALLOWED_RECIPIENTS para habilitar el envío real."
-        )
-    if destinatario.strip().lower() not in permitidos:
-        raise ErrorEnvioCorreo("Ese destinatario no está autorizado para recibir correos.")
     if not config.RESEND_API_KEY:
         raise ErrorEnvioCorreo("Falta configurar RESEND_API_KEY en el backend.")
     if not config.RESEND_FROM_EMAIL:

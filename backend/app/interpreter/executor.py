@@ -184,7 +184,7 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
                         ) from error
                     except (smtplib.SMTPException, OSError) as error:
                         raise ErrorEjecucion(
-                            "No se pudo enviar el correo al servidor de correo.",
+                            "No se pudo enviar el correo al servidor SMTP de pruebas.",
                             instr.linea, instr.columna,
                         ) from error
 

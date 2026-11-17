@@ -70,17 +70,17 @@ def ejecutar(monkeypatch, codigo, optimizar):
 
 @pytest.mark.parametrize("codigo,escrituras", [
     ("ENCENDER led1\nENCENDER led1", 1),
-    ("ENCENDER led1\nAPAGAR led1", 1),
-    ("ENCENDER led1\nENCENDER led1\nAPAGAR led1", 1),
+    ("ENCENDER led1\nAPAGAR led1", 0),
+    ("ENCENDER led1\nENCENDER led1\nAPAGAR led1", 0),
     ("ENCENDER led1\nAPAGAR led1\nENCENDER led1", 1),
     ("ENCENDER led1\nCONSULTAR led1\nAPAGAR led1", 2),
     ("ENCENDER led1\nLISTAR DISPOSITIVOS\nAPAGAR led1", 2),
     ('ENCENDER led1\nNOTIFICAR "Alerta"\nAPAGAR led1', 2),
     ('ENCENDER led1\nENVIAR CORREO A "prueba@ejemplo.com" MENSAJE "Hola"\nAPAGAR led1', 2),
     ("ENCENDER led1\nENCENDER luz_sala\nAPAGAR led1", 3),
-    ("SI led1 == APAGADO ENTONCES ENCENDER led1\nENCENDER led1", 2),
+    ("SI led1 == APAGADO ENTONCES ENCENDER led1\nENCENDER led1", 1),
     ("ENCENDER led1\nSI led1 == ENCENDIDO ENTONCES APAGAR led1", 2),
-    ("ACTIVAR alarma1\nDESACTIVAR alarma1", 1),
+    ("ACTIVAR alarma1\nDESACTIVAR alarma1", 0),
 ])
 def test_optimizador_equivalente(monkeypatch, codigo, escrituras):
     ir_original, no, db_no, mail_no = ejecutar(monkeypatch, codigo, False)
@@ -96,14 +96,20 @@ def test_optimizador_equivalente(monkeypatch, codigo, escrituras):
     assert len(db_no.historial) == len(no["resultados"])
     assert db_si.notificaciones == db_no.notificaciones
     assert mail_si == mail_no
-    # La respuesta lógica es equivalente, salvo la marca informativa.
-    assert [
-        {clave: valor for clave, valor in evento.items() if clave != "optimizada"}
-        for evento in si["resultados"]
-    ] == no["resultados"]
+    # Una instrucción sin UPDATE queda identificada como omitida; al
+    # comparar el efecto lógico, sigue representando la misma orden validada.
+    def resultado_logico(evento):
+        limpio = {k: v for k, v in evento.items() if k != "optimizada"}
+        if evento.get("optimizada") and evento["estado"] == "OMITIDA":
+            limpio["estado"] = "EXITOSA"
+            limpio["detalle"] = f'{evento["dispositivo"]}: {evento["valor"]}'
+        return limpio
+
+    assert [resultado_logico(e) for e in si["resultados"]] == no["resultados"]
     assert si["instrucciones_ir"] == no["instrucciones_ir"]
     assert len(ir_optimizado.instrucciones) == len(ir_original.instrucciones)
     assert si["optimizacion"]["escrituras_evitadas"] == db_no.updates - db_si.updates
+    assert si["optimizacion"]["escrituras_fisicas"] == db_si.updates
 
 
 def test_cuenta_redundantes_y_sobrescritas():
@@ -157,17 +163,29 @@ def test_no_muta_ir_original():
     assert json.dumps(ir.a_diccionario()) == original
 
 
-def test_historial_contiene_solo_escrituras_fisicas(monkeypatch):
+def test_historial_no_registra_bloque_sin_cambios_reales(monkeypatch):
+    # El LED inicia APAGADO, por lo tanto no hay escrituras físicas.
     codigo = "ENCENDER led1\nENCENDER led1\nAPAGAR led1"
+    _, respuesta, db, _ = ejecutar(monkeypatch, codigo, True)
+    assert len(respuesta["resultados"]) == 3
+    assert db.updates == 0
+    assert len(db.historial) == 0
+    assert [evento.get("optimizada", False) for evento in respuesta["resultados"]] == [
+        True, True, True
+    ]
+    assert respuesta["optimizacion"]["escrituras_fisicas"] == 0
+
+
+def test_historial_registra_una_escritura_real(monkeypatch):
+    codigo = "ENCENDER led1\nENCENDER led1\nENCENDER led1"
     _, respuesta, db, _ = ejecutar(monkeypatch, codigo, True)
     assert len(respuesta["resultados"]) == 3
     assert db.updates == 1
     assert len(db.historial) == 1
-    assert db.historial[0][0] == "APAGAR led1"
+    assert db.historial[0][0] == "ENCENDER led1"
     assert [evento.get("optimizada", False) for evento in respuesta["resultados"]] == [
         True, True, False
     ]
-    assert "ENCENDER led1" not in [fila[0] for fila in db.historial]
 
 
 def test_sin_optimizacion_conserva_historial_completo(monkeypatch):

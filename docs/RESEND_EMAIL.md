@@ -1,4 +1,4 @@
-# SmartHome: enviar correos reales a Gmail con Resend
+# SmartHome: enviar correos reales a cualquier dirección con Resend
 
 El comando del lenguaje **no cambia**:
 
@@ -24,10 +24,9 @@ Agrega o cambia estas variables en .env:
     MAIL_PROVIDER=resend
     RESEND_API_KEY=re_TU_CLAVE_PRIVADA_REAL
     RESEND_FROM_EMAIL=notificaciones@smarthome.votaya.com.mx
-    RESEND_ALLOWED_RECIPIENTS=tu-cuenta@gmail.com,otra-cuenta@gmail.com
 
-* Cambia la clave de ejemplo por tu API key y las direcciones por las reales.
-* **RESEND_ALLOWED_RECIPIENTS es obligatorio**: este proyecto no tiene login/autenticación y permitir envío a cualquier dirección sería peligroso.
+* Cambia la clave de ejemplo por tu API key real.
+* Se permiten destinatarios de cualquier proveedor (Gmail, Outlook, Yahoo, etc.) con un formato de correo válido. **Advertencia:** como la API pública no tiene autenticación ni límites de solicitudes, podría ser utilizada por terceros para enviar mensajes desde tu cuenta de Resend.
 * El archivo .env está ignorado por Git. Código, pruebas y plantillas no contienen claves reales.
 * La clave **solo** se utiliza en el backend Python; nunca uses VITE_RESEND_API_KEY.
 
@@ -47,11 +46,11 @@ Abre http://localhost:5173, entra en la consola y escribe:
 
     ENVIAR CORREO A "tu-cuenta@gmail.com" MENSAJE "Hola desde SmartHome"
 
-El destinatario **debe coincidir** con una dirección de RESEND_ALLOWED_RECIPIENTS.
+El destinatario puede ser **cualquier correo válido**; no necesita estar registrado en el archivo .env.
 
 Si Resend acepta el envío, la respuesta dirá **Resend aceptó el correo dirigido a ...**. Esto confirma la aceptación de la solicitud por Resend, **no garantiza entrega en Gmail**. Revisa el panel de Resend para estado de entrega, rebotes o errores; revisa también spam/promociones en Gmail.
 
-Si falta la API key, los DNS siguen pendientes o el destinatario no está autorizado, el backend devuelve un error controlado y no afirma haber enviado el mensaje.
+Si falta la API key, los DNS siguen pendientes o Resend rechaza el mensaje, el backend devuelve un error controlado y no afirma haber enviado el mensaje.
 
 ## 4. Mailpit (pruebas sin correo real)
 
@@ -74,7 +73,7 @@ Los mensajes se muestran en http://localhost:8025 y **no llegan a Gmail**.
 - Para Resend se usa HTTPS POST https://api.resend.com/emails con cabecera Authorization Bearer y from, to, subject, text.
 - Una respuesta aceptada debe incluir id.
 - Los envíos reales tienen efecto externo: un rollback posterior de PostgreSQL **no** puede retirar un mensaje ya aceptado por Resend.
-- No expongas /api/ejecutar públicamente mientras no existan autenticación, autorización y límites de solicitudes.
+- Actualmente /api/ejecutar es público y permite enviar correo a cualquier destinatario válido; esto supone un riesgo de abuso de la cuenta Resend, además de los límites que aplica el propio proveedor.
 
 ## 6. Pruebas automatizadas
 

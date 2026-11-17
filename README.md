@@ -158,6 +158,24 @@ disponibles GET `/api/historial` y GET `/api/notificaciones`.
 
 Consulta la [guía completa](docs/INTEGRACION_WEB_SMARTHOME.md).
 
+### Enviar correo real con Resend
+
+SmartHome permite usar `MAIL_PROVIDER=mailpit` (simulación local, predeterminado)
+o `MAIL_PROVIDER=resend` (envío a Gmail y otras direcciones reales).
+
+Para Resend, configura en tu **.env local** la clave `RESEND_API_KEY`,
+el remitente `RESEND_FROM_EMAIL=notificaciones@smarthome.votaya.com.mx`
+y una lista `RESEND_ALLOWED_RECIPIENTS` de destinatarios autorizados.
+Es indispensable verificar el dominio en Resend antes de intentar enviar.
+
+Ejemplo de SmartHome Script:
+
+```text
+ENVIAR CORREO A "tu-cuenta@gmail.com" MENSAJE "Hola desde SmartHome"
+```
+
+[Guía completa de configuración con GoDaddy, Resend y Docker](docs/RESEND_EMAIL.md).
+
 ## Documentacion y plan de desarrollo
 
 - [Diseno formal del lenguaje](docs/Diseno_lenguaje_SmartHome.pdf)

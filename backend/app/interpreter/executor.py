@@ -8,9 +8,8 @@ from __future__ import annotations
 
 import json
 import smtplib
-from email.message import EmailMessage
 
-from app.core.config import SMTP_HOST, SMTP_PORT
+from app.core.mailer import ErrorEnvioCorreo, enviar_correo
 from app.db.connection import abrir_conexion
 from .intermediate import OperacionIR, ProgramaIR
 
@@ -28,15 +27,13 @@ class ErrorEjecucion(ValueError):
                 "columna": self.columna, "descripcion": self.descripcion}
 
 
-def enviar_correo_prueba(destinatario: str, mensaje: str) -> None:
-    """Entrega mediante el SMTP configurado (Mailpit en Docker Compose)."""
-    email = EmailMessage()
-    email["From"] = "smarthome@localhost"
-    email["To"] = destinatario
-    email["Subject"] = "Notificación SmartHome"
-    email.set_content(mensaje)
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=5) as cliente:
-        cliente.send_message(email)
+def enviar_correo_prueba(destinatario: str, mensaje: str) -> dict[str, str]:
+    """Compatibilidad con el ejecutor existente; cambia el proveedor por configuración.
+
+    En modo Resend se comunica con la API HTTPS de Resend; en modo Mailpit
+    utiliza SMTP local. Ninguna credencial llega al frontend ni al IR.
+    """
+    return enviar_correo(destinatario, mensaje)
 
 
 def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
@@ -180,14 +177,30 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
                 elif op is OperacionIR.ENVIAR_CORREO:
                     destinatario, mensaje = args
                     try:
-                        enviar_correo_prueba(destinatario, mensaje)
+                        confirmacion = enviar_correo_prueba(destinatario, mensaje)
+                    except ErrorEnvioCorreo as error:
+                        raise ErrorEjecucion(
+                            str(error), instr.linea, instr.columna
+                        ) from error
                     except (smtplib.SMTPException, OSError) as error:
                         raise ErrorEjecucion(
-                            "No se pudo enviar el correo al servidor SMTP de pruebas.",
+                            "No se pudo enviar el correo al servidor de correo.",
                             instr.linea, instr.columna,
                         ) from error
-                    registrar(instr, "EXITOSA", f"Correo enviado a {destinatario}",
-                              destinatario=destinatario)
+
+                    proveedor = (
+                        confirmacion.get("proveedor", "mailpit")
+                        if isinstance(confirmacion, dict) else "mailpit"
+                    )
+                    detalle = (
+                        f"Resend aceptó el correo dirigido a {destinatario}"
+                        if proveedor == "resend"
+                        else f"Correo de prueba enviado a {destinatario} (Mailpit)"
+                    )
+                    extra = {"destinatario": destinatario, "proveedor": proveedor}
+                    if isinstance(confirmacion, dict) and confirmacion.get("id"):
+                        extra["id_envio"] = confirmacion["id"]
+                    registrar(instr, "EXITOSA", detalle, **extra)
 
                 elif op is OperacionIR.LEER_ESTADO:
                     identificador, temporal = args

@@ -36,16 +36,16 @@ SERVIDORES_PUSH_PERMITIDOS = frozenset({
 def validar_endpoint(endpoint: str) -> bool:
     try:
         url = urlsplit(endpoint)
+        return (
+            url.scheme == "https"
+            and url.hostname in SERVIDORES_PUSH_PERMITIDOS
+            and url.port in (None, 443)
+            and not url.username
+            and not url.password
+            and bool(url.path and url.path != "/")
+        )
     except ValueError:
         return False
-    return (
-        url.scheme == "https"
-        and url.hostname in SERVIDORES_PUSH_PERMITIDOS
-        and url.port in (None, 443)
-        and not url.username
-        and not url.password
-        and bool(url.path and url.path != "/")
-    )
 
 
 def asegurar_clave_vapid() -> Path:

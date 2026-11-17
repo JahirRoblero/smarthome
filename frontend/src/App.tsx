@@ -36,6 +36,24 @@ type Historial = {
 };
 
 type Notificacion = { id: number; mensaje: string; fecha: string };
+type EstadoPush = "inactivo" | "activo" | "bloqueado" | "sin-soporte";
+
+function disponiblePush(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    window.isSecureContext &&
+    "serviceWorker" in navigator &&
+    "PushManager" in window &&
+    "Notification" in window
+  );
+}
+
+function clavePublicaABuffer(clave: string): ArrayBuffer {
+  const base64 = clave.replace(/-/g, "+").replace(/_/g, "/");
+  const relleno = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+  return Uint8Array.from(atob(relleno), (caracter) => caracter.charCodeAt(0)).buffer;
+}
+
 type Salud = { database: string };
 type ResumenOptimizacion = {
   habilitada: boolean;
@@ -331,6 +349,10 @@ export default function App() {
   const [dispositivos, setDispositivos] = useState<Dispositivo[]>([]);
   const [historial, setHistorial] = useState<Historial[]>([]);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
+  const [estadoPush, setEstadoPush] = useState<EstadoPush>("inactivo");
+  const [ocupadoPush, setOcupadoPush] = useState(false);
+  const [mensajePush, setMensajePush] = useState("");
+
   const [codigo, setCodigo] = useState<string>(EJEMPLOS.basico);
   const [guiaAbierta, setGuiaAbierta] = useState(false);
   const [optimizar, setOptimizar] = useState(true);
@@ -382,6 +404,96 @@ export default function App() {
     }, 15000);
     return () => window.clearInterval(intervalo);
   }, [actualizar]);
+
+
+  useEffect(() => {
+    if (!disponiblePush()) {
+      setEstadoPush("sin-soporte");
+      return;
+    }
+    if (Notification.permission === "denied") {
+      setEstadoPush("bloqueado");
+      return;
+    }
+    let vigente = true;
+    navigator.serviceWorker.getRegistration("/").then(async (registro) => {
+      const suscripcion = await registro?.pushManager.getSubscription();
+      if (vigente) setEstadoPush(suscripcion ? "activo" : "inactivo");
+    }).catch(() => {
+      if (vigente) setEstadoPush("sin-soporte");
+    });
+    return () => { vigente = false; };
+  }, []);
+
+  async function activarNotificaciones() {
+    if (!disponiblePush() || ocupadoPush) return;
+    setOcupadoPush(true);
+    setMensajePush("");
+    try {
+      // El permiso se solicita únicamente al pulsar el botón.
+      const permiso = await Notification.requestPermission();
+      if (permiso !== "granted") {
+        setEstadoPush(permiso === "denied" ? "bloqueado" : "inactivo");
+        setMensajePush("Para recibir alertas debes permitir las notificaciones en el navegador.");
+        return;
+      }
+      const clave = await solicitar<{ publicKey: string }>("/api/push/clave-publica");
+      const registro = await navigator.serviceWorker.register("/sw-push.js", { scope: "/" });
+      let suscripcion = await registro.pushManager.getSubscription();
+      if (!suscripcion) {
+        suscripcion = await registro.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: clavePublicaABuffer(clave.publicKey),
+        });
+      }
+      const datos = suscripcion.toJSON();
+      if (!datos.endpoint || !datos.keys?.p256dh || !datos.keys.auth) {
+        throw new Error("El navegador no devolvió una suscripción válida.");
+      }
+      await solicitar("/api/push/suscribir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          endpoint: datos.endpoint,
+          keys: { p256dh: datos.keys.p256dh, auth: datos.keys.auth },
+        }),
+      });
+      setEstadoPush("activo");
+      setMensajePush('Listo. Prueba con NOTIFICAR "Hola desde SmartHome".');
+    } catch (error) {
+      setMensajePush(
+        error instanceof Error ? error.message : "No se pudieron activar las notificaciones.",
+      );
+    } finally {
+      setOcupadoPush(false);
+    }
+  }
+
+  async function desactivarNotificaciones() {
+    if (!disponiblePush() || ocupadoPush) return;
+    setOcupadoPush(true);
+    setMensajePush("");
+    try {
+      const registro = await navigator.serviceWorker.getRegistration("/");
+      const suscripcion = await registro?.pushManager.getSubscription();
+      if (suscripcion) {
+        await solicitar("/api/push/cancelar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint: suscripcion.endpoint }),
+        });
+        await suscripcion.unsubscribe();
+      }
+      setEstadoPush("inactivo");
+      setMensajePush("Notificaciones desactivadas en este navegador.");
+    } catch (error) {
+      setMensajePush(
+        error instanceof Error ? error.message : "No fue posible desactivar las notificaciones.",
+      );
+    } finally {
+      setOcupadoPush(false);
+    }
+  }
 
   async function procesar(modo: Modo, fuente = codigo) {
     if (ocupado || !fuente.trim()) return;
@@ -920,6 +1032,43 @@ export default function App() {
                 <h2 id="titulo-notificaciones">Notificaciones</h2>
                 <p>Mensajes generados con NOTIFICAR.</p>
               </div>
+            </div>
+            <div className="push-configuracion">
+              <div className="push-configuracion-texto">
+                <strong>Avisos reales del navegador</strong>
+                <p>
+                  Recibe alertas del sistema al ejecutar NOTIFICAR,
+                  incluso cuando SmartHome no esté abierto.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="boton boton-secundario push-boton"
+                disabled={ocupadoPush || estadoPush === "sin-soporte" || estadoPush === "bloqueado"}
+                onClick={() => void (estadoPush === "activo"
+                  ? desactivarNotificaciones()
+                  : activarNotificaciones())}
+              >
+                {ocupadoPush
+                  ? "Configurando..."
+                  : estadoPush === "activo"
+                    ? "Desactivar avisos"
+                    : estadoPush === "bloqueado"
+                      ? "Permiso bloqueado"
+                      : estadoPush === "sin-soporte"
+                        ? "No disponible"
+                        : "Activar avisos"}
+              </button>
+              <span className={`push-estado ${estadoPush === "activo" ? "push-estado-activo" : ""}`}>
+                {estadoPush === "activo"
+                  ? "Activadas en este navegador"
+                  : estadoPush === "bloqueado"
+                    ? "Autoriza las notificaciones desde la configuración del navegador."
+                    : estadoPush === "sin-soporte"
+                      ? "Requiere HTTPS y un navegador compatible con Web Push."
+                      : "Desactivadas en este navegador"}
+              </span>
+              {mensajePush && <p className="push-mensaje" role="status">{mensajePush}</p>}
             </div>
             <div className="lista-notificaciones">
               {notificaciones.length === 0 ? (

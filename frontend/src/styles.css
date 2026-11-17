@@ -829,3 +829,15 @@ td code {
   border-radius: 4px;
   line-height: 1.6;
 }
+
+/* Distingue un evento lógico optimizado de una escritura física real. */
+.evento-sin-escritura {
+  margin: 0;
+  padding: 11px 12px;
+  border: 1px solid #d7dfeb;
+  background: #f1f5fb;
+  color: #385574;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: 600;
+}

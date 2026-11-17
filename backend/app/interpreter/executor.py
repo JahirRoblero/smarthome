@@ -55,7 +55,7 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
 
     with abrir_conexion() as conexion:
         with conexion.cursor() as cursor:
-            def registrar(instr, estado: str, detalle: str, **extra):
+            def registrar(instr, estado: str, detalle: str, *, guardar_en_historial: bool = True, **extra):
                 evento = {
                     "linea": instr.linea,
                     "operacion": (
@@ -70,11 +70,12 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
                 texto = (lineas[instr.linea - 1].strip()
                          if 0 < instr.linea <= len(lineas) else
                          f"{instr.operacion.value} {' '.join(map(str, instr.argumentos))}")
-                cursor.execute(
-                    "INSERT INTO historial (instruccion, resultado, estado_ejecucion) "
-                    "VALUES (%s, %s, %s)",
-                    (texto, json.dumps(evento, ensure_ascii=False), estado),
-                )
+                if guardar_en_historial:
+                    cursor.execute(
+                        "INSERT INTO historial (instruccion, resultado, estado_ejecucion) "
+                        "VALUES (%s, %s, %s)",
+                        (texto, json.dumps(evento, ensure_ascii=False), estado),
+                    )
                 resultados.append(evento)
 
             while pc < len(instrucciones):
@@ -99,11 +100,13 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
                               dispositivo=identificador, valor=estado)
 
                 elif op is OperacionIR.REGISTRAR_ESTADO_LOGICO:
-                    # Conserva la misma traza lógica, sin UPDATE innecesario.
+                    # Es un evento lógico: no ejecuta UPDATE ni INSERT en historial.
+                    # Se entrega en la respuesta para explicar la optimización.
                     identificador, estado = args
                     registrar(
                         instr, "EXITOSA", f"{identificador}: {estado}",
-                        dispositivo=identificador, valor=estado,
+                        guardar_en_historial=False,
+                        dispositivo=identificador, valor=estado, optimizada=True,
                     )
 
                 elif op is OperacionIR.CONSULTAR_ESTADO:

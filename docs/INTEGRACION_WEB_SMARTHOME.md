@@ -91,6 +91,8 @@ GitHub Actions ejecuta las pruebas y la compilación en cada cambio a main. Las 
 ## Etapa 9 — Optimización del IR
 
 El backend ofrece el campo booleano `optimizar` (por defecto `true`)
-en `POST /api/compilar` y `POST /api/ejecutar`. El historial lógico
-se conserva y se reducen únicamente escrituras SQL de estado.
+en `POST /api/compilar` y `POST /api/ejecutar`. Se conserva la respuesta
+lógica de todas las instrucciones, pero las asignaciones optimizadas sin
+`UPDATE` ya no se guardan en la tabla `historial`; las demás operaciones
+y los errores mantienen su registro. El historial preexistente no se borra.
 Más detalles: [Etapa 9](ETAPA_9_OPTIMIZACIONES.md).

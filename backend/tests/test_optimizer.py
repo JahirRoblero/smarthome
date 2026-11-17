@@ -88,10 +88,19 @@ def test_optimizador_equivalente(monkeypatch, codigo, escrituras):
     assert db_si.updates == escrituras
     assert db_no.updates >= db_si.updates
     assert db_si.estados == db_no.estados
-    assert db_si.historial == db_no.historial
+    # Las instrucciones optimizadas no se registran como operaciones físicas.
+    eventos_reales = [evento for evento in si["resultados"] if not evento.get("optimizada")]
+    assert len(db_si.historial) == len(eventos_reales)
+    assert [json.loads(fila[1]) for fila in db_si.historial] == eventos_reales
+    # Sin optimizar se persisten todos los eventos de ejecución.
+    assert len(db_no.historial) == len(no["resultados"])
     assert db_si.notificaciones == db_no.notificaciones
     assert mail_si == mail_no
-    assert si["resultados"] == no["resultados"]
+    # La respuesta lógica es equivalente, salvo la marca informativa.
+    assert [
+        {clave: valor for clave, valor in evento.items() if clave != "optimizada"}
+        for evento in si["resultados"]
+    ] == no["resultados"]
     assert si["instrucciones_ir"] == no["instrucciones_ir"]
     assert len(ir_optimizado.instrucciones) == len(ir_original.instrucciones)
     assert si["optimizacion"]["escrituras_evitadas"] == db_no.updates - db_si.updates
@@ -128,8 +137,14 @@ def test_condicion_falsa_con_asignaciones_posteriores(monkeypatch):
     _, no, db_no, _ = ejecutar(monkeypatch, codigo, False)
     _, si, db_si, _ = ejecutar(monkeypatch, codigo, True)
     assert db_no.estados == db_si.estados
-    assert db_no.historial == db_si.historial
-    assert si["resultados"] == no["resultados"]
+    assert len(db_si.historial) == len(db_no.historial) - 1
+    assert [json.loads(fila[1]) for fila in db_si.historial] == [
+        evento for evento in si["resultados"] if not evento.get("optimizada")
+    ]
+    assert [
+        {clave: valor for clave, valor in evento.items() if clave != "optimizada"}
+        for evento in si["resultados"]
+    ] == no["resultados"]
     assert db_si.updates == 1
 
 
@@ -140,3 +155,24 @@ def test_no_muta_ir_original():
     assert ir.instrucciones[0].operacion is OperacionIR.ASIGNAR_ESTADO
     assert despues.instrucciones[0].operacion is OperacionIR.REGISTRAR_ESTADO_LOGICO
     assert json.dumps(ir.a_diccionario()) == original
+
+
+def test_historial_contiene_solo_escrituras_fisicas(monkeypatch):
+    codigo = "ENCENDER led1\nENCENDER led1\nAPAGAR led1"
+    _, respuesta, db, _ = ejecutar(monkeypatch, codigo, True)
+    assert len(respuesta["resultados"]) == 3
+    assert db.updates == 1
+    assert len(db.historial) == 1
+    assert db.historial[0][0] == "APAGAR led1"
+    assert [evento.get("optimizada", False) for evento in respuesta["resultados"]] == [
+        True, True, False
+    ]
+    assert "ENCENDER led1" not in [fila[0] for fila in db.historial]
+
+
+def test_sin_optimizacion_conserva_historial_completo(monkeypatch):
+    codigo = "ENCENDER led1\nENCENDER led1"
+    _, respuesta, db, _ = ejecutar(monkeypatch, codigo, False)
+    assert db.updates == 2
+    assert len(db.historial) == 2
+    assert all(not evento.get("optimizada") for evento in respuesta["resultados"])

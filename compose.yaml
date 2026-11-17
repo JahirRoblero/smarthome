@@ -33,6 +33,10 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-smarthome}:${POSTGRES_PASSWORD:-smarthome_dev_only}@postgres:5432/${POSTGRES_DB:-smarthome}
       SMTP_HOST: mailpit
       SMTP_PORT: "1025"
+      MAIL_PROVIDER: ${MAIL_PROVIDER:-mailpit}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-notificaciones@smarthome.votaya.com.mx}
+      RESEND_ALLOWED_RECIPIENTS: ${RESEND_ALLOWED_RECIPIENTS:-}
       CORS_ORIGINS: http://localhost:${FRONTEND_PORT:-5173}
     ports:
       - "${BACKEND_PORT:-8000}:8000"

@@ -38,3 +38,13 @@ INSERT INTO dispositivos (identificador, tipo, estado) VALUES
     ('alarma1', 'ALARMA', 'DESACTIVADA'),
     ('puerta_principal', 'PUERTA', 'CERRADA')
 ON CONFLICT (identificador) DO NOTHING;
+
+-- Suscripciones opt-in de navegadores para Web Push.
+-- No contiene contraseñas ni claves privadas VAPID.
+CREATE TABLE IF NOT EXISTS push_suscripciones (
+    endpoint TEXT PRIMARY KEY,
+    p256dh TEXT NOT NULL,
+    auth TEXT NOT NULL,
+    creado_en TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

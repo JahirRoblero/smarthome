@@ -34,6 +34,7 @@ from .symbols import TablaSimbolos
 
 class OperacionIR(str, Enum):
     ASIGNAR_ESTADO = "ASIGNAR_ESTADO"
+    REGISTRAR_ESTADO_LOGICO = "REGISTRAR_ESTADO_LOGICO"
     CONSULTAR_ESTADO = "CONSULTAR_ESTADO"
     LISTAR_DISPOSITIVOS = "LISTAR_DISPOSITIVOS"
     REGISTRAR_NOTIFICACION = "REGISTRAR_NOTIFICACION"
@@ -77,11 +78,26 @@ class InstruccionIR:
 class ProgramaIR:
     instrucciones: tuple[InstruccionIR, ...]
     temporales: int
+    optimizacion: dict[str, int | bool] | None = None
+
+    def resumen_optimizacion(self) -> dict[str, int | bool]:
+        if self.optimizacion is not None:
+            return self.optimizacion
+        total = sum(i.operacion is OperacionIR.ASIGNAR_ESTADO for i in self.instrucciones)
+        return {
+            "habilitada": False,
+            "asignaciones_originales": total,
+            "escrituras_fisicas": total,
+            "escrituras_evitadas": 0,
+            "redundantes": 0,
+            "sobrescritas": 0,
+        }
 
     def a_diccionario(self) -> dict:
         return {
             "tipo": "PROGRAMA_IR",
             "temporales": self.temporales,
+            "optimizacion": self.resumen_optimizacion(),
             "instrucciones": [
                 instruccion.a_diccionario(indice)
                 for indice, instruccion in enumerate(self.instrucciones)
@@ -173,13 +189,14 @@ def generar_codigo_intermedio(programa_validado: Programa) -> ProgramaIR:
     return GeneradorIR().generar(programa_validado)
 
 
-def compilar_a_ir(texto: str, tabla_simbolos: TablaSimbolos | None = None) -> ProgramaIR:
-    """Punto de entrada público: texto -> léxico -> sintaxis -> semántica -> IR.
-
-    Si existe un error de validación no devuelve un IR parcial.
-    """
+def compilar_a_ir(
+    texto: str, tabla_simbolos: TablaSimbolos | None = None, *, optimizar: bool = True
+) -> ProgramaIR:
+    """Lexer -> parser -> semántica -> IR -> optimización segura opcional."""
+    from .optimizer import optimizar_programa
     programa_validado = analizar_semantico(texto, tabla_simbolos)
-    return generar_codigo_intermedio(programa_validado)
+    ir = generar_codigo_intermedio(programa_validado)
+    return optimizar_programa(ir, habilitada=optimizar)
 
 
 def main() -> int:
@@ -187,6 +204,8 @@ def main() -> int:
     origen = cli.add_mutually_exclusive_group(required=True)
     origen.add_argument("--texto", help="Programa fuente de SmartHome")
     origen.add_argument("--archivo", type=Path, help="Archivo UTF-8 con el programa")
+    cli.add_argument("--sin-optimizar", action="store_true",
+                     help="Desactivar la reducción de escrituras físicas")
     args = cli.parse_args()
     if args.archivo is not None:
         try:
@@ -196,7 +215,9 @@ def main() -> int:
     else:
         texto = args.texto
     try:
-        resultado = {"correcto": True, "ir": compilar_a_ir(texto).a_diccionario()}
+        resultado = {"correcto": True, "ir": compilar_a_ir(
+            texto, optimizar=not args.sin_optimizar
+        ).a_diccionario()}
     except (ErrorLexico, ErrorSintactico, ErrorSemantico) as error:
         resultado = {"correcto": False, "error": error.a_diccionario()}
         print(json.dumps(resultado, ensure_ascii=False, indent=2))

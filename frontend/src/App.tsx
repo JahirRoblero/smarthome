@@ -455,7 +455,7 @@ export default function App() {
       <main className="contenido">
         <div className="titulo-pagina">
           <div>
-            <h1 className="principal">Panel de control</h1>
+            <h1 className="principal">Panel de control Smarthome</h1>
             <p>
               Control de dispositivos simulados mediante instrucciones SmartHome
               Script.
@@ -570,7 +570,7 @@ export default function App() {
                 onChange={(evento) => setOptimizar(evento.target.checked)}
                 disabled={ocupado}
               />
-              Optimizar escrituras de estado (Etapa 9)
+              Optimizar escrituras de estado 
             </label>
 
             <div className="acciones">
@@ -809,15 +809,6 @@ export default function App() {
                   </article>
                 ))
               )}
-            </div>
-            <div className="ayuda-correo">
-              ENVIAR CORREO usa Mailpit para pruebas o Resend para correos
-              reales, según la configuración del backend. Para pruebas locales,
-              consulta{" "}
-              <a href="http://localhost:8025" target="_blank" rel="noreferrer">
-                Mailpit
-              </a>
-              . Con Resend, escribe cualquier dirección de correo válida.
             </div>
           </section>
         </div>

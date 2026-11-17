@@ -227,7 +227,7 @@ pre,
   place-items: center;
   border: 1px solid #e1e5e9;
   border-radius: 5px;
-  background: #f7f8fa;
+  background: #cacaca;
   color: #818f9c;
 }
 .dispositivo-ilustracion svg {
@@ -248,7 +248,7 @@ pre,
 }
 .dispositivo-activo .dispositivo-ilustracion {
   border-color: #c4dfcb;
-  background: #f0f8f2;
+  background: #fff59a;
   color: #347d4d;
 }
 .dispositivo-activo .dispositivo-ilustracion .light-bulb {
@@ -309,8 +309,8 @@ pre,
   white-space: nowrap;
 }
 .estado-activo {
-  color: #00d560;
-  background: #e8ffe9;
+  color: #ffd000;
+  background: #ffffe8;
   font-family: "Montserrat";
 }
 .estado-inactivo {
@@ -359,9 +359,9 @@ pre,
   padding: 13px 14px;
   border: 1px solid #cbd5df;
   border-radius: 4px;
-  background: #fbfcfd;
+  background: #fdfdfb;
   resize: vertical;
-  color: #21354a;
+  color: #000000;
   font-size: 13px;
   line-height: 1.7;
   tab-size: 2;
@@ -401,6 +401,7 @@ pre,
   align-items: center;
   gap: 8px;
   margin-top: 15px;
+  margin-left: 20px;
   color: #41566b;
   font-size: 12px;
   cursor: pointer;
@@ -412,8 +413,8 @@ pre,
 }
 .resumen-optimizacion {
   font-size: 12px;
-  color: #536780;
-  background: #f5f7fa;
+  color: #000000;
+  background: #fafaf5;
   border: 1px solid #e1e7ef;
   border-radius: 4px;
   padding: 9px 12px;
@@ -532,7 +533,7 @@ pre,
   border-bottom: 1px solid #e9edf1;
 }
 .evento-linea {
-  color: #7d8994;
+  color: #000000;
   font-size: 11px;
   min-width: 46px;
 }
@@ -768,7 +769,6 @@ td code {
   height: auto;
 }
 
-/* Resultados de control: instrucciones reconocidas y confirmación detallada. */
 .evento-completo {
   flex: 1 1 100%;
   min-width: 0;
@@ -778,7 +778,7 @@ td code {
 }
 .evento-reconocimiento {
   padding: 13px 14px;
-  background: #f4f6fa;
+  background: #fafaf4;
   border: 1px solid #dce4ed;
   border-radius: 5px;
 }

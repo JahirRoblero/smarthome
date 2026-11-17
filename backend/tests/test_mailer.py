@@ -68,6 +68,8 @@ def test_resend_envia_json_por_https(modo_resend, monkeypatch):
     assert req.full_url == "https://api.resend.com/emails"
     assert req.get_method() == "POST"
     assert req.get_header("Authorization") == "Bearer re_clave_de_prueba_nunca_real"
+    assert req.get_header("User-agent") == "SmartHome/1.0 (Resend email integration)"
+    assert req.get_header("Accept") == "application/json"
     datos = json.loads(req.data)
     assert datos == {
         "from": "notificaciones@smarthome.votaya.com.mx",
@@ -125,6 +127,20 @@ def test_resend_rechaza_dominio_y_no_filtra_secretos(modo_resend, monkeypatch):
     with pytest.raises(mailer.ErrorEnvioCorreo, match="verificación DNS") as capturado:
         mailer.enviar_correo("destino@gmail.com", "Hola")
     assert "secret-value" not in str(capturado.value)
+
+
+def test_cloudflare_1010_muestra_causa_correcta(modo_resend, monkeypatch):
+    def falla(_req, timeout):
+        raise HTTPError(
+            "https://api.resend.com/emails",
+            403, "Forbidden", {"Content-Type": "text/plain"},
+            io.BytesIO(b"error code: 1010\\n"),
+        )
+
+    monkeypatch.setattr(mailer, "urlopen", falla)
+    with pytest.raises(mailer.ErrorEnvioCorreo, match="Cloudflare.*1010") as capturado:
+        mailer.enviar_correo("destino@gmail.com", "Hola")
+    assert "API key" not in str(capturado.value)
 
 
 def test_resend_no_confirma_sin_id(modo_resend, monkeypatch):

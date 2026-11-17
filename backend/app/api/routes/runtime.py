@@ -6,7 +6,7 @@ import logging
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 
-from app.api.routes.semantic import SolicitudAnalisis
+from app.api.routes.semantic import SolicitudPrograma
 from app.db.activity_repository import listar_historial, listar_notificaciones, registrar_error_ejecucion
 from app.db.devices_repository import listar_dispositivos
 from app.interpreter.executor import ErrorEjecucion, ejecutar_ir
@@ -28,7 +28,7 @@ def guardar_error(codigo: str, error: ErrorLexico | ErrorSintactico | ErrorSeman
 
 
 @router.post("/ejecutar")
-def ejecutar(solicitud: SolicitudAnalisis):
+def ejecutar(solicitud: SolicitudPrograma):
     """Compila, valida y ejecuta exclusivamente el código intermedio."""
     if len(solicitud.codigo) > 20000:
         return JSONResponse(
@@ -38,7 +38,7 @@ def ejecutar(solicitud: SolicitudAnalisis):
             }},
         )
     try:
-        programa_ir = compilar_a_ir(solicitud.codigo)
+        programa_ir = compilar_a_ir(solicitud.codigo, optimizar=solicitud.optimizar)
     except (ErrorLexico, ErrorSintactico, ErrorSemantico) as error:
         guardar_error(solicitud.codigo, error)
         return JSONResponse(

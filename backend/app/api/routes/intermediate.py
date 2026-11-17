@@ -5,7 +5,7 @@ import logging
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from app.api.routes.semantic import SolicitudAnalisis
+from app.api.routes.semantic import SolicitudPrograma
 from app.interpreter.intermediate import compilar_a_ir
 from app.interpreter.lexer import ErrorLexico
 from app.interpreter.parser import ErrorSintactico
@@ -16,10 +16,10 @@ router = APIRouter(prefix="/api", tags=["intérprete"])
 
 
 @router.post("/compilar")
-def compilar(solicitud: SolicitudAnalisis):
+def compilar(solicitud: SolicitudPrograma):
     """Genera instrucciones IR, sin ejecutar ni modificar dispositivos."""
     try:
-        programa = compilar_a_ir(solicitud.codigo)
+        programa = compilar_a_ir(solicitud.codigo, optimizar=solicitud.optimizar)
     except (ErrorLexico, ErrorSintactico, ErrorSemantico) as error:
         return JSONResponse(
             status_code=422,

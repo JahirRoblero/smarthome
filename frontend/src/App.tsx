@@ -36,7 +36,17 @@ type Historial = {
 
 type Notificacion = { id: number; mensaje: string; fecha: string };
 type Salud = { database: string };
+type ResumenOptimizacion = {
+  habilitada: boolean;
+  asignaciones_originales: number;
+  escrituras_fisicas: number;
+  escrituras_evitadas: number;
+  redundantes: number;
+  sobrescritas: number;
+};
+
 type RespuestaEjecucion = {
+  optimizacion: ResumenOptimizacion;
   correcto: true;
   resultados: Evento[];
   dispositivos: Dispositivo[];
@@ -58,7 +68,7 @@ type ErrorServidor = {
   detail?: unknown;
 };
 type Resultado =
-  | { modo: "ejecutar"; eventos: Evento[] }
+  | { modo: "ejecutar"; eventos: Evento[]; optimizacion: ResumenOptimizacion }
   | { modo: "analizar"; datos: unknown; cantidad: number }
   | { modo: "compilar"; datos: unknown }
   | {
@@ -269,6 +279,7 @@ export default function App() {
   const [historial, setHistorial] = useState<Historial[]>([]);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [codigo, setCodigo] = useState<string>(EJEMPLOS.basico);
+  const [optimizar, setOptimizar] = useState(true);
   const [ejemplo, setEjemplo] = useState<keyof typeof EJEMPLOS>("basico");
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [ocupado, setOcupado] = useState(false);
@@ -333,14 +344,20 @@ export default function App() {
       const opciones = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ codigo: fuente }),
+        body: JSON.stringify(
+          modo === "analizar" ? { codigo: fuente } : { codigo: fuente, optimizar },
+        ),
       };
       if (modo === "ejecutar") {
         const respuesta = await solicitar<RespuestaEjecucion>(
           rutas[modo],
           opciones,
         );
-        setResultado({ modo: "ejecutar", eventos: respuesta.resultados });
+        setResultado({
+          modo: "ejecutar",
+          eventos: respuesta.resultados,
+          optimizacion: respuesta.optimizacion,
+        });
         setDispositivos(respuesta.dispositivos);
         await actualizar();
       } else if (modo === "analizar") {
@@ -533,6 +550,16 @@ export default function App() {
               </button>
             </div>
 
+            <label className="opcion-optimizacion">
+              <input
+                type="checkbox"
+                checked={optimizar}
+                onChange={(evento) => setOptimizar(evento.target.checked)}
+                disabled={ocupado}
+              />
+              Optimizar escrituras de estado (Etapa 9)
+            </label>
+
             <div className="acciones">
               <button
                 type="button"
@@ -618,6 +645,13 @@ export default function App() {
                     Programa ejecutado · {resultado.eventos.length} resultados
                     registrados
                   </p>
+                  {resultado.optimizacion && (
+                    <p className="resumen-optimizacion">
+                      {resultado.optimizacion.habilitada
+                        ? `Optimización: ${resultado.optimizacion.escrituras_evitadas} escrituras evitadas (${resultado.optimizacion.redundantes} redundantes, ${resultado.optimizacion.sobrescritas} sobrescritas). Escrituras físicas: ${resultado.optimizacion.escrituras_fisicas}.`
+                        : "Optimización desactivada: se ejecutaron todas las escrituras."}
+                    </p>
+                  )}
                   {resultado.eventos.length === 0 && (
                     <p>No había instrucciones para ejecutar.</p>
                   )}

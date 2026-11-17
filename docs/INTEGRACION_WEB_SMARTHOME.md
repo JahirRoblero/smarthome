@@ -87,3 +87,10 @@ GitHub Actions ejecuta las pruebas y la compilación en cada cambio a main. Las 
 - Las optimizaciones del IR permanecen pendientes (Etapa 9).
 - La aplicación no utiliza sensores físicos.
 - Mailpit es exclusivamente un buzón de pruebas, no un proveedor de correo real.
+
+## Etapa 9 — Optimización del IR
+
+El backend ofrece el campo booleano `optimizar` (por defecto `true`)
+en `POST /api/compilar` y `POST /api/ejecutar`. El historial lógico
+se conserva y se reducen únicamente escrituras SQL de estado.
+Más detalles: [Etapa 9](ETAPA_9_OPTIMIZACIONES.md).

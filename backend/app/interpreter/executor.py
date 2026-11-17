@@ -58,7 +58,11 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
             def registrar(instr, estado: str, detalle: str, **extra):
                 evento = {
                     "linea": instr.linea,
-                    "operacion": instr.operacion.value,
+                    "operacion": (
+                        OperacionIR.ASIGNAR_ESTADO.value
+                        if instr.operacion is OperacionIR.REGISTRAR_ESTADO_LOGICO
+                        else instr.operacion.value
+                    ),
                     "estado": estado,
                     "detalle": detalle,
                     **extra,
@@ -93,6 +97,14 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
                         )
                     registrar(instr, "EXITOSA", f"{identificador}: {estado}",
                               dispositivo=identificador, valor=estado)
+
+                elif op is OperacionIR.REGISTRAR_ESTADO_LOGICO:
+                    # Conserva la misma traza lógica, sin UPDATE innecesario.
+                    identificador, estado = args
+                    registrar(
+                        instr, "EXITOSA", f"{identificador}: {estado}",
+                        dispositivo=identificador, valor=estado,
+                    )
 
                 elif op is OperacionIR.CONSULTAR_ESTADO:
                     identificador, = args
@@ -182,4 +194,9 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
                         f"Operación IR desconocida: {op}", instr.linea, instr.columna
                     )
                 pc += 1
-    return {"correcto": True, "resultados": resultados, "instrucciones_ir": len(instrucciones)}
+    return {
+        "correcto": True,
+        "resultados": resultados,
+        "instrucciones_ir": len(instrucciones),
+        "optimizacion": programa.resumen_optimizacion(),
+    }

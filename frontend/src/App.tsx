@@ -94,6 +94,48 @@ const EJEMPLOS = {
     'ENVIAR CORREO A "prueba@ejemplo.com" MENSAJE "Prueba desde SmartHome"',
 } as const;
 
+// Ejemplos comprobados contra la gramática de SmartHome Script 1.0.
+const GUIA_COMANDOS = [
+  {
+    titulo: "Control de dispositivos",
+    descripcion: "Las acciones dependen del tipo de dispositivo.",
+    comandos: [
+      { nombre: "Encender", codigo: "ENCENDER led1", detalle: "LED, luces o ventiladores" },
+      { nombre: "Apagar", codigo: "APAGAR luz_sala", detalle: "LED, luces o ventiladores" },
+      { nombre: "Activar", codigo: "ACTIVAR alarma1", detalle: "Activar una alarma" },
+      { nombre: "Desactivar", codigo: "DESACTIVAR alarma1", detalle: "Desactivar una alarma" },
+      { nombre: "Abrir", codigo: "ABRIR puerta_principal", detalle: "Abrir una puerta" },
+      { nombre: "Cerrar", codigo: "CERRAR puerta_principal", detalle: "Cerrar una puerta" },
+    ],
+  },
+  {
+    titulo: "Consultar dispositivos",
+    descripcion: "Leer estados sin modificar los dispositivos.",
+    comandos: [
+      { nombre: "Consultar", codigo: "CONSULTAR led1", detalle: "Ver el estado de un dispositivo" },
+      { nombre: "Listar", codigo: "LISTAR DISPOSITIVOS", detalle: "Mostrar todos los dispositivos" },
+    ],
+  },
+  {
+    titulo: "Avisos y correo",
+    descripcion: "Generar avisos o enviar mensajes por correo electrónico.",
+    comandos: [
+      { nombre: "Notificar", codigo: 'NOTIFICAR "Movimiento detectado"', detalle: "Crear una notificación interna" },
+      { nombre: "Enviar correo", codigo: 'ENVIAR CORREO A "correo@ejemplo.com" MENSAJE "Alerta de SmartHome"', detalle: "Sustituye el destinatario por un correo real" },
+    ],
+  },
+  {
+    titulo: "Condiciones",
+    descripcion: "Ejecutar una instrucción solo cuando se cumpla una condición.",
+    comandos: [
+      { nombre: "Si... entonces", codigo: 'SI led1 == ENCENDIDO ENTONCES NOTIFICAR "El LED está encendido"', detalle: "Comparar un estado con ==" },
+      { nombre: "Control condicionado", codigo: "SI alarma1 == ACTIVADA ENTONCES ENCENDER led1", detalle: "Ejecutar una acción según un estado" },
+    ],
+  },
+] as const;
+
+const COMANDOS_RAPIDOS = ["ENCENDER led1", "CONSULTAR led1", "LISTAR DISPOSITIVOS"] as const;
+
 const nombres: Record<string, string> = {
   led1: "LED 1",
   luz_sala: "Luz de sala",
@@ -290,6 +332,7 @@ export default function App() {
   const [historial, setHistorial] = useState<Historial[]>([]);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [codigo, setCodigo] = useState<string>(EJEMPLOS.basico);
+  const [guiaAbierta, setGuiaAbierta] = useState(false);
   const [optimizar, setOptimizar] = useState(true);
   const [ejemplo, setEjemplo] = useState<keyof typeof EJEMPLOS>("basico");
   const [resultado, setResultado] = useState<Resultado | null>(null);
@@ -429,6 +472,13 @@ export default function App() {
     setResultado(null);
   }
 
+  function usarComandoAyuda(comando: string) {
+    // Cargar solo en el editor: nunca ejecutar instrucciones desde la guía.
+    setCodigo(comando);
+    setResultado(null);
+    document.getElementById("editor-codigo")?.focus();
+  }
+
   const activos = dispositivos.filter((d) =>
     estadosActivos.has(d.estado),
   ).length;
@@ -462,6 +512,81 @@ export default function App() {
             </p>
           </div>
         </div>
+
+        <section className="guia-script" aria-labelledby="titulo-guia-script">
+          <div className="guia-script-cabecera">
+            <div>
+              <span className="guia-script-sobrelinea">¿Primera vez en SmartHome?</span>
+              <h2 id="titulo-guia-script">Guía rápida de comandos</h2>
+              <p>
+                Controla los dispositivos escribiendo instrucciones en mayúsculas.
+                Los nombres de dispositivos van en minúsculas y los mensajes entre comillas.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="guia-script-desplegar"
+              aria-expanded={guiaAbierta}
+              aria-controls="guia-script-detalle"
+              onClick={() => setGuiaAbierta((abierta) => !abierta)}
+            >
+              {guiaAbierta ? "Ocultar guía" : "Ver todos los comandos"}
+              <span aria-hidden="true">{guiaAbierta ? "▴" : "▾"}</span>
+            </button>
+          </div>
+          <div className="guia-script-rapidos">
+            <span>Prueba uno:</span>
+            {COMANDOS_RAPIDOS.map((comando) => (
+              <button
+                type="button"
+                className="guia-script-ejemplo"
+                key={comando}
+                onClick={() => usarComandoAyuda(comando)}
+                title="Cargar en la consola sin ejecutar"
+              >
+                <code>{comando}</code>
+              </button>
+            ))}
+          </div>
+          <div
+            id="guia-script-detalle"
+            className="guia-script-detalle"
+            hidden={!guiaAbierta}
+          >
+            <div className="guia-script-grupos">
+              {GUIA_COMANDOS.map((grupo) => (
+                <div className="guia-script-grupo" key={grupo.titulo}>
+                  <h3>{grupo.titulo}</h3>
+                  <p>{grupo.descripcion}</p>
+                  <ul>
+                    {grupo.comandos.map((comando) => (
+                      <li key={comando.codigo}>
+                        <div className="guia-script-comando">
+                          <strong>{comando.nombre}</strong>
+                          <code>{comando.codigo}</code>
+                          <span>{comando.detalle}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="guia-script-usar"
+                          onClick={() => usarComandoAyuda(comando.codigo)}
+                          title="Cargar en la consola sin ejecutar"
+                        >
+                          Usar
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            <p className="guia-script-nota">
+              Cada instrucción va en una línea. Puedes combinar varias líneas.
+              Cambia los identificadores según los dispositivos registrados.
+              Los ejemplos solo se cargan en la consola: pulsa Ejecutar cuando estén listos.
+            </p>
+          </div>
+        </section>
 
         {errorCarga && (
           <div role="alert" className="alerta alerta-error">

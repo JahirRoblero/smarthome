@@ -15,7 +15,6 @@ def modo_resend(monkeypatch):
     monkeypatch.setattr(config, "MAIL_PROVIDER", "resend")
     monkeypatch.setattr(config, "RESEND_API_KEY", "re_clave_de_prueba_nunca_real")
     monkeypatch.setattr(config, "RESEND_FROM_EMAIL", "notificaciones@smarthome.votaya.com.mx")
-    monkeypatch.setattr(config, "RESEND_ALLOWED_RECIPIENTS", "destino@gmail.com,otro@ejemplo.com")
 
 
 def test_mailpit_por_defecto(monkeypatch):
@@ -78,27 +77,30 @@ def test_resend_envia_json_por_https(modo_resend, monkeypatch):
     }
 
 
-def test_no_hay_envio_sin_destinatarios_permitidos(monkeypatch):
-    monkeypatch.setattr(config, "MAIL_PROVIDER", "resend")
-    monkeypatch.setattr(config, "RESEND_ALLOWED_RECIPIENTS", "")
-    monkeypatch.setattr(mailer, "urlopen", lambda *_args, **_kwargs: pytest.fail("No llamar a Resend"))
-    with pytest.raises(mailer.ErrorEnvioCorreo, match="RESEND_ALLOWED_RECIPIENTS"):
-        mailer.enviar_correo("destino@gmail.com", "Hola")
+def test_permite_cualquier_direccion_valida(modo_resend, monkeypatch):
+    solicitudes = []
 
-
-def test_rechaza_destinatario_fuera_de_lista(modo_resend, monkeypatch):
-    monkeypatch.setattr(mailer, "urlopen", lambda *_args, **_kwargs: pytest.fail("No llamar a Resend"))
-    with pytest.raises(mailer.ErrorEnvioCorreo, match="no está autorizado"):
-        mailer.enviar_correo("desconocido@gmail.com", "Hola")
-
-
-def test_permite_mayusculas_en_comparacion_de_destinatarios(modo_resend, monkeypatch):
     class Respuesta:
         def __enter__(self): return self
         def __exit__(self, *_): return False
         def read(self, *_): return b'{"id":"email_456"}'
-    monkeypatch.setattr(mailer, "urlopen", lambda *_args, **_kwargs: Respuesta())
-    assert mailer.enviar_correo("DESTINO@gmail.com", "Hola")["id"] == "email_456"
+
+    def enviar(req, timeout):
+        solicitudes.append(json.loads(req.data))
+        return Respuesta()
+
+    monkeypatch.setattr(mailer, "urlopen", enviar)
+
+    destinos = [
+        "destino@gmail.com",
+        "estudiante@outlook.com",
+        "persona@yahoo.com",
+        "contacto@universidad.edu.mx",
+    ]
+    for direccion in destinos:
+        assert mailer.enviar_correo(direccion, "Hola")["id"] == "email_456"
+
+    assert [solicitud["to"][0] for solicitud in solicitudes] == destinos
 
 
 def test_falta_api_key(modo_resend, monkeypatch):

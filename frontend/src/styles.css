@@ -800,6 +800,51 @@ td code {
   color: #7a8793;
   margin: 16px;
 }
+/* Suscripción opt-in a Web Push: independiente del historial. */
+.push-configuracion {
+  padding: 15px 18px;
+  border-bottom: 1px solid #e8edf1;
+  background: #f8fafc;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 9px 12px;
+}
+.push-configuracion-texto {
+  flex: 1 1 210px;
+  min-width: 0;
+}
+.push-configuracion-texto strong {
+  font-size: 13px;
+  color: #293b4d;
+}
+.push-configuracion-texto p {
+  margin-top: 5px;
+  color: #697a8c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.push-boton {
+  flex: 0 0 auto;
+}
+.push-estado,
+.push-mensaje {
+  flex: 1 1 100%;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #748191;
+}
+.push-estado-activo {
+  color: #247343;
+  font-weight: 600;
+}
+.push-mensaje {
+  padding: 9px 10px;
+  border-radius: 4px;
+  border: 1px solid #d6e2ed;
+  color: #345876;
+  background: #fff;
+}
 .lista-notificaciones {
   max-height: 290px;
   overflow-y: auto;

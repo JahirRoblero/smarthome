@@ -21,6 +21,7 @@ type Evento = {
   operacion: string;
   estado: string;
   detalle: string;
+  optimizada?: boolean;
   dispositivo?: string;
   valor?: string;
   dispositivos?: { identificador: string; tipo: string; estado: string }[];
@@ -267,9 +268,16 @@ function DetalleEjecucion({
           <strong className="valor-correcto">{evento.estado}</strong>
         </p>
       </div>
-      <p className="evento-confirmacion">
-        {nombre} {estadoLegible} correctamente.
-      </p>
+      {evento.optimizada ? (
+        <p className="evento-sin-escritura">
+          Optimización aplicada: no se realizó UPDATE del dispositivo
+          ni se guardó esta instrucción en el historial.
+        </p>
+      ) : (
+        <p className="evento-confirmacion">
+          {nombre} {estadoLegible} correctamente.
+        </p>
+      )}
     </div>
   );
 }
@@ -718,7 +726,10 @@ export default function App() {
             <div className="panel-cabecera">
               <div>
                 <h2 id="titulo-historial">Historial de operaciones</h2>
-                <p>Últimos 30 registros guardados en PostgreSQL.</p>
+                <p>
+                  Últimas 30 operaciones registradas. Las asignaciones
+                  optimizadas sin escritura física no aparecen aquí.
+                </p>
               </div>
             </div>
             <div className="tabla-contenedor">

@@ -5,20 +5,25 @@
 Dos técnicas: eliminar escrituras redundantes y escrituras cuyo valor se
 sobrescribe, sin cambiar el comportamiento observable del programa.
 
-- \`ENCENDER led1\` dos veces: dos eventos lógicos, una sola escritura real.
-- \`ENCENDER led1\` seguido de \`APAGAR led1\`: dos eventos lógicos,
+- `ENCENDER led1` dos veces: dos eventos lógicos, una sola escritura real.
+- `ENCENDER led1` seguido de `APAGAR led1`: dos eventos lógicos,
   una sola escritura real del valor final.
 
 ## Estrategia
 
 El IR se valida primero. Luego, solamente en grupos de asignaciones
 **consecutivas al mismo dispositivo**, algunas instrucciones
-\`ASIGNAR_ESTADO\` se convierten en \`REGISTRAR_ESTADO_LOGICO\`.
+`ASIGNAR_ESTADO` se convierten en `REGISTRAR_ESTADO_LOGICO`.
 No se eliminan instrucciones, ni cambian sus argumentos, índices, líneas,
 columnas o direcciones de salto.
 
-El ejecutor conserva el mismo resultado de cada instrucción y el mismo
-registro en el historial, pero ejecuta menos \`UPDATE dispositivos\`.
+El ejecutor conserva las respuestas lógicas de las instrucciones, pero
+**solo guarda en la tabla `historial` los eventos que realmente se ejecutan**:
+las asignaciones sustituidas por `REGISTRAR_ESTADO_LOGICO` no generan
+`UPDATE dispositivos` ni `INSERT INTO historial`. En la respuesta de la
+consola estas instrucciones llevan la marca `optimizada: true` y una
+explicación visible. Las consultas, notificaciones, correos, asignaciones
+físicas y errores siguen registrándose como antes.
 
 Las consultas, listados, condiciones, notificaciones y correos cortan los
 grupos de optimización; ninguna acción condicional se optimiza.
@@ -35,25 +40,30 @@ intermedia nueva, deben revisarse estas reglas antes de habilitar optimización.
 React muestra la casilla "Optimizar escrituras de estado (Etapa 9)".
 Afecta a **Ejecutar** y **Ver IR**; no afecta a **Validar**.
 
-Se admite \`optimizar: true/false\` en POST \`/api/ejecutar\` y
-\`/api/compilar\`, por defecto \`true\`.
+Se admite `optimizar: true/false` en POST `/api/ejecutar` y
+`/api/compilar`, por defecto `true`.
 
 Ejemplo:
 
-\`\`\`json
+```json
 {"codigo":"ENCENDER led1\nAPAGAR led1","optimizar":true}
-\`\`\`
+```
 
-El resultado incluye \`optimizacion\` con conteos de asignaciones
+El resultado incluye `optimizacion` con conteos de asignaciones
 originales, escrituras físicas, evitadas, redundantes y sobrescritas.
 
 ## Pruebas
 
-\`\`\`bash
+```bash
 cd backend
 python -m pytest -q
-\`\`\`
+```
 
-Se comparan estados finales, resultados por línea, historial lógico,
-notificaciones y correos con y sin optimización, además de conteos de
-escrituras físicas y barreras de observación.
+Se comparan estados finales, resultados lógicos por línea, notificaciones
+y correos con y sin optimización. También se verifica que el historial
+persistido omite únicamente las asignaciones sin escritura física y que los
+conteos de `UPDATE` corresponden a las asignaciones realmente ejecutadas.
+
+La optimización solo se aplica dentro de **una misma solicitud**, no entre
+ejecuciones distintas de la consola. El historial ya guardado antes de esta
+actualización se conserva; no se modifican ni borran registros históricos.

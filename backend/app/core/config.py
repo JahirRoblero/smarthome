@@ -12,5 +12,3 @@ CORS_ORIGINS = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://l
 MAIL_PROVIDER = os.getenv("MAIL_PROVIDER", "mailpit")
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
 RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "notificaciones@smarthome.votaya.com.mx").strip()
-# Obligatoria en modo Resend: la API todavía no tiene autenticación.
-RESEND_ALLOWED_RECIPIENTS = os.getenv("RESEND_ALLOWED_RECIPIENTS", "")

@@ -817,7 +817,7 @@ export default function App() {
               <a href="http://localhost:8025" target="_blank" rel="noreferrer">
                 Mailpit
               </a>
-              . En Resend, utiliza una dirección autorizada en el archivo .env.
+              . Con Resend, escribe cualquier dirección de correo válida.
             </div>
           </section>
         </div>

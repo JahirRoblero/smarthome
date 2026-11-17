@@ -345,7 +345,9 @@ export default function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          modo === "analizar" ? { codigo: fuente } : { codigo: fuente, optimizar },
+          modo === "analizar"
+            ? { codigo: fuente }
+            : { codigo: fuente, optimizar },
         ),
       };
       if (modo === "ejecutar") {

@@ -4,7 +4,7 @@ import logging
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, StrictStr
+from pydantic import BaseModel, ConfigDict, StrictBool, StrictStr
 
 from app.interpreter.lexer import ErrorLexico
 from app.interpreter.parser import ErrorSintactico
@@ -17,6 +17,11 @@ router = APIRouter(prefix="/api", tags=["intérprete"])
 class SolicitudAnalisis(BaseModel):
     model_config = ConfigDict(extra="forbid")
     codigo: StrictStr
+
+
+class SolicitudPrograma(SolicitudAnalisis):
+    """Opción de /compilar y /ejecutar; /analizar sigue siendo solo lectura."""
+    optimizar: StrictBool = True
 
 
 @router.post("/analizar")

@@ -1,0 +1,12 @@
+{
+  "name": "SmartHome · Panel de control",
+  "short_name": "SmartHome",
+  "description": "Control de dispositivos y notificaciones mediante SmartHome Script",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fffdf9",
+  "theme_color": "#dd9700",
+  "lang": "es-MX"
+}

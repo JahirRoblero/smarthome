@@ -25,6 +25,22 @@ def test_compilacion_correcta(monkeypatch):
     assert r.json()["ir"]["instrucciones"][0]["argumentos"] == ["led1", "ENCENDIDO"]
 
 
+def test_optimizar_opcional_en_api(monkeypatch):
+    preparar(monkeypatch)
+    codigo = "ENCENDER led1\nENCENDER led1\nAPAGAR led1"
+    con = client.post("/api/compilar", json={"codigo": codigo, "optimizar": True})
+    sin = client.post("/api/compilar", json={"codigo": codigo, "optimizar": False})
+    assert con.status_code == sin.status_code == 200
+    ir_con = con.json()["ir"]
+    ir_sin = sin.json()["ir"]
+    assert ir_con["optimizacion"]["escrituras_evitadas"] == 2
+    assert ir_sin["optimizacion"]["escrituras_evitadas"] == 0
+    assert len(ir_con["instrucciones"]) == len(ir_sin["instrucciones"]) == 3
+    assert client.post("/api/compilar", json={
+        "codigo": codigo, "optimizar": "si"
+    }).status_code == 422
+
+
 def test_condicional_y_saltos(monkeypatch):
     preparar(monkeypatch)
     r = client.post("/api/compilar", json={"codigo": "SI led1 == APAGADO ENTONCES ENCENDER led1"})

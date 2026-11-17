@@ -92,23 +92,6 @@ const nombres: Record<string, string> = {
 
 const estadosActivos = new Set(["ENCENDIDO", "ACTIVADA", "ABIERTA"]);
 
-function comandoPara(dispositivo: Dispositivo): string {
-  const activo = estadosActivos.has(dispositivo.estado);
-  const comando =
-    dispositivo.tipo === "ALARMA"
-      ? activo
-        ? "DESACTIVAR"
-        : "ACTIVAR"
-      : dispositivo.tipo === "PUERTA"
-        ? activo
-          ? "CERRAR"
-          : "ABRIR"
-        : activo
-          ? "APAGAR"
-          : "ENCENDER";
-  return `${comando} ${dispositivo.identificador}`;
-}
-
 function fechaCorta(valor: string): string {
   const fecha = new Date(valor);
   return Number.isNaN(fecha.getTime())
@@ -199,15 +182,10 @@ function IconoDispositivo({
 
 function TarjetaDispositivo({
   dispositivo,
-  ocupado,
-  alControlar,
 }: {
   dispositivo: Dispositivo;
-  ocupado: boolean;
-  alControlar: (codigo: string) => void;
 }) {
   const activo = estadosActivos.has(dispositivo.estado);
-  const comando = comandoPara(dispositivo);
 
   return (
     <article className={`dispositivo ${activo ? "dispositivo-activo" : ""}`}>
@@ -302,9 +280,6 @@ export default function App() {
   const [cargando, setCargando] = useState(true);
   const [conectado, setConectado] = useState(false);
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
-  const [ultimaActualizacion, setUltimaActualizacion] = useState<string | null>(
-    null,
-  );
 
   const actualizar = useCallback(async () => {
     const [rDispositivos, rHistorial, rNotificaciones, rSalud] =
@@ -337,8 +312,6 @@ export default function App() {
         ? null
         : "No fue posible consultar el sistema. Verifica FastAPI y PostgreSQL.",
     );
-    if (disponible)
-      setUltimaActualizacion(new Date().toLocaleTimeString("es-MX"));
     setCargando(false);
   }, []);
 
@@ -503,10 +476,6 @@ export default function App() {
                   <TarjetaDispositivo
                     key={d.identificador}
                     dispositivo={d}
-                    ocupado={ocupado}
-                    alControlar={(comando) =>
-                      void procesar("ejecutar", comando)
-                    }
                   />
                 ))
               )}

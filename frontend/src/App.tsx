@@ -552,7 +552,7 @@ export default function App() {
               >
                 <option value="basico">Encender, consultar y listar</option>
                 <option value="condicional">Condición y notificación</option>
-                <option value="correo">Correo de prueba (Mailpit)</option>
+                <option value="correo">Enviar correo (Mailpit o Resend)</option>
               </select>
               <button
                 type="button"
@@ -811,12 +811,13 @@ export default function App() {
               )}
             </div>
             <div className="ayuda-correo">
-              Para probar ENVIAR CORREO, utiliza el ejemplo de la consola y
+              ENVIAR CORREO usa Mailpit para pruebas o Resend para correos
+              reales, según la configuración del backend. Para pruebas locales,
               consulta{" "}
               <a href="http://localhost:8025" target="_blank" rel="noreferrer">
-                Mailpit (SMTP de pruebas)
+                Mailpit
               </a>
-              .
+              . En Resend, utiliza una dirección autorizada en el archivo .env.
             </div>
           </section>
         </div>

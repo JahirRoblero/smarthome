@@ -396,6 +396,29 @@ pre,
   color: #334252;
   font-size: 12px;
 }
+.opcion-optimizacion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  color: #41566b;
+  font-size: 12px;
+  cursor: pointer;
+}
+.opcion-optimizacion input {
+  width: 15px;
+  height: 15px;
+  accent-color: #285e9b;
+}
+.resumen-optimizacion {
+  font-size: 12px;
+  color: #536780;
+  background: #f5f7fa;
+  border: 1px solid #e1e7ef;
+  border-radius: 4px;
+  padding: 9px 12px;
+  margin: 0 0 10px;
+}
 .acciones {
   display: flex;
   flex-wrap: wrap;

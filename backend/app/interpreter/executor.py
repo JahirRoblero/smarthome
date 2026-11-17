@@ -52,6 +52,11 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
     temporales: dict[str, str | bool] = {}
     instrucciones = programa.instrucciones
     pc = 0
+    # Estadísticas reales de ejecución; el IR compilado solo conoce el máximo
+    # de escrituras posibles, no el estado actual de PostgreSQL.
+    escrituras_reales = 0
+    evitadas_por_estado = 0
+    optimizacion_habilitada = programa.resumen_optimizacion()["habilitada"]
 
     with abrir_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -85,6 +90,33 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
 
                 if op is OperacionIR.ASIGNAR_ESTADO:
                     identificador, estado = args
+
+                    if optimizacion_habilitada:
+                        # El estado persiste entre peticiones. Se bloquea la fila
+                        # para que dos solicitudes simultáneas no escriban/logueen
+                        # redundantemente el mismo estado.
+                        cursor.execute(
+                            "SELECT estado FROM dispositivos WHERE identificador = %s FOR UPDATE",
+                            (identificador,),
+                        )
+                        actual = cursor.fetchone()
+                        if actual is None:
+                            raise ErrorEjecucion(
+                                f"El dispositivo {identificador} ya no existe.",
+                                instr.linea, instr.columna,
+                            )
+                        if actual[0] == estado:
+                            evitadas_por_estado += 1
+                            registrar(
+                                instr, "OMITIDA",
+                                f"{identificador} ya estaba {estado}; no se modificó.",
+                                guardar_en_historial=False,
+                                dispositivo=identificador, valor=estado,
+                                optimizada=True,
+                            )
+                            pc += 1
+                            continue
+
                     cursor.execute(
                         "UPDATE dispositivos SET estado = %s, actualizado_en = NOW() "
                         "WHERE identificador = %s RETURNING estado",
@@ -96,6 +128,7 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
                             f"El dispositivo {identificador} ya no existe.",
                             instr.linea, instr.columna,
                         )
+                    escrituras_reales += 1
                     registrar(instr, "EXITOSA", f"{identificador}: {estado}",
                               dispositivo=identificador, valor=estado)
 
@@ -197,9 +230,15 @@ def ejecutar_ir(programa: ProgramaIR, codigo_fuente: str = "") -> dict:
                         f"Operación IR desconocida: {op}", instr.linea, instr.columna
                     )
                 pc += 1
+    resumen = dict(programa.resumen_optimizacion())
+    resumen["escrituras_fisicas"] = escrituras_reales
+    resumen["escrituras_evitadas"] = (
+        resumen["asignaciones_originales"] - escrituras_reales
+    )
+    resumen["evitadas_por_estado"] = evitadas_por_estado
     return {
         "correcto": True,
         "resultados": resultados,
         "instrucciones_ir": len(instrucciones),
-        "optimizacion": programa.resumen_optimizacion(),
+        "optimizacion": resumen,
     }

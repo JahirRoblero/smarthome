@@ -44,6 +44,7 @@ type ResumenOptimizacion = {
   escrituras_evitadas: number;
   redundantes: number;
   sobrescritas: number;
+  evitadas_por_estado?: number;
 };
 
 type RespuestaEjecucion = {
@@ -265,7 +266,9 @@ function DetalleEjecucion({
         </p>
         <p>
           <span>Ejecución:</span>
-          <strong className="valor-correcto">{evento.estado}</strong>
+          <strong className={evento.estado === "OMITIDA" ? "valor-omitido" : "valor-correcto"}>
+            {evento.estado}
+          </strong>
         </p>
       </div>
       {evento.optimizada ? (
@@ -652,13 +655,13 @@ export default function App() {
               ) : resultado.modo === "ejecutar" ? (
                 <div className="resultado-exito">
                   <p className="resultado-aviso">
-                    Programa ejecutado · {resultado.eventos.length} resultados
-                    registrados
+                    Programa procesado · {resultado.eventos.length} resultados
+                    generados
                   </p>
                   {resultado.optimizacion && (
                     <p className="resumen-optimizacion">
                       {resultado.optimizacion.habilitada
-                        ? `Optimización: ${resultado.optimizacion.escrituras_evitadas} escrituras evitadas (${resultado.optimizacion.redundantes} redundantes, ${resultado.optimizacion.sobrescritas} sobrescritas). Escrituras físicas: ${resultado.optimizacion.escrituras_fisicas}.`
+                        ? `Optimización: ${resultado.optimizacion.escrituras_evitadas} escrituras evitadas (${resultado.optimizacion.redundantes} redundantes en IR, ${resultado.optimizacion.sobrescritas} sobrescritas en IR, ${resultado.optimizacion.evitadas_por_estado ?? 0} por estado ya establecido). Escrituras físicas reales: ${resultado.optimizacion.escrituras_fisicas}.`
                         : "Optimización desactivada: se ejecutaron todas las escrituras."}
                     </p>
                   )}

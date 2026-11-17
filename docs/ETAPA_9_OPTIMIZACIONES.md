@@ -67,3 +67,28 @@ conteos de `UPDATE` corresponden a las asignaciones realmente ejecutadas.
 La optimización solo se aplica dentro de **una misma solicitud**, no entre
 ejecuciones distintas de la consola. El historial ya guardado antes de esta
 actualización se conserva; no se modifican ni borran registros históricos.
+
+## Evitar escrituras repetidas entre ejecuciones independientes
+
+La optimización del IR actúa dentro de cada programa. Adicionalmente, con
+`optimizar=true`, el ejecutor compara cada asignación física pendiente con
+el **estado persistido actual** del dispositivo mediante
+`SELECT ... FOR UPDATE`. Si coincide, no realiza `UPDATE` ni
+`INSERT INTO historial`; devuelve a la consola un evento `OMITIDA`
+con `optimizada=true` para explicarlo.
+
+Por ejemplo, en tres peticiones independientes de `ENCENDER led1`, si el
+LED inicialmente está apagado, solo la primera genera una escritura y una
+fila de historial. Si después se ejecuta `APAGAR led1`, se realiza y
+registra ese nuevo cambio.
+
+Las consultas siguen ejecutándose y registrándose normalmente. Al desmarcar
+la casilla de optimización se mantiene el comportamiento original con
+escrituras repetidas. El cálculo de `escrituras_fisicas` y
+`escrituras_evitadas` en **/api/ejecutar** refleja las escrituras realmente
+realizadas; en **/api/compilar** es una estimación estática sin conexión
+al estado actual.
+
+Los registros creados por versiones anteriores no se eliminan ni se
+reinterpretan retroactivamente. No se debe confundir la presencia de filas
+antiguas con escrituras nuevas de la versión optimizada.

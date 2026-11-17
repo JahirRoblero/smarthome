@@ -841,3 +841,8 @@ td code {
   text-align: center;
   font-weight: 600;
 }
+
+/* Las instrucciones válidas omitidas por idempotencia no son UPDATE exitosos. */
+.evento-reconocimiento .valor-omitido {
+  color: #8a6b22;
+}

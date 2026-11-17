@@ -16,6 +16,7 @@ class BaseFalsa:
         self.siguiente = None
         self.ultimo_sql = ""
         self.rollback = False
+        self.updates = 0
 
     def __enter__(self):
         return self
@@ -30,6 +31,7 @@ class BaseFalsa:
     def execute(self, sql, valores=None):
         self.ultimo_sql = sql
         if sql.startswith("UPDATE dispositivos"):
+            self.updates += 1
             estado, nombre = valores
             self.siguiente = None
             if nombre in self.estados:
@@ -138,3 +140,54 @@ def test_fallo_smtp_no_se_reporta_como_exito(entorno, monkeypatch):
         ejecutar_ir(compilar_a_ir(codigo, tabla), codigo)
     assert base.rollback is True
     assert len(base.historial) == 0
+
+
+
+def test_optimiza_repeticiones_entre_solicitudes_separadas(entorno):
+    """Una orden repetida no provoca UPDATE ni historial cuando ya coincide."""
+    base, tabla = entorno
+    codigo = "ENCENDER led1"
+    programa = compilar_a_ir(codigo, tabla, optimizar=True)
+
+    primero = ejecutar_ir(programa, codigo)
+    segundo = ejecutar_ir(programa, codigo)
+    tercero = ejecutar_ir(programa, codigo)
+
+    assert base.estados["led1"] == "ENCENDIDO"
+    assert base.updates == 1
+    assert len(base.historial) == 1
+    assert primero["resultados"][0]["estado"] == "EXITOSA"
+    assert segundo["resultados"][0]["estado"] == "OMITIDA"
+    assert tercero["resultados"][0]["optimizada"] is True
+    assert segundo["optimizacion"]["escrituras_fisicas"] == 0
+    assert segundo["optimizacion"]["escrituras_evitadas"] == 1
+    assert segundo["optimizacion"]["evitadas_por_estado"] == 1
+
+    apagado = ejecutar_ir(compilar_a_ir("APAGAR led1", tabla), "APAGAR led1")
+    assert apagado["resultados"][0]["estado"] == "EXITOSA"
+    assert base.updates == 2
+    assert len(base.historial) == 2
+
+    encendido = ejecutar_ir(programa, codigo)
+    assert encendido["resultados"][0]["estado"] == "EXITOSA"
+    assert base.updates == 3
+    assert len(base.historial) == 3
+
+
+def test_sin_optimizacion_conserva_actualizaciones_repetidas(entorno):
+    base, tabla = entorno
+    ir = compilar_a_ir("ENCENDER led1", tabla, optimizar=False)
+    ejecutar_ir(ir, "ENCENDER led1")
+    ejecutar_ir(ir, "ENCENDER led1")
+
+    assert base.updates == 2
+    assert len(base.historial) == 2
+
+
+def test_consulta_intermedia_sigue_retorna_estado_y_se_registra(entorno):
+    base, tabla = entorno
+    ejecutar_ir(compilar_a_ir("ENCENDER led1", tabla), "ENCENDER led1")
+    resultado = ejecutar_ir(compilar_a_ir("CONSULTAR led1", tabla), "CONSULTAR led1")
+    assert resultado["resultados"][0]["valor"] == "ENCENDIDO"
+    assert len(base.historial) == 2
+    assert base.updates == 1

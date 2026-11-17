@@ -138,8 +138,13 @@ def test_condicion_falsa_con_asignaciones_posteriores(monkeypatch):
     _, si, db_si, _ = ejecutar(monkeypatch, codigo, True)
     assert db_no.estados == db_si.estados
     assert len(db_si.historial) == len(db_no.historial) - 1
-    assert db_si.historial == db_no.historial[:-1]
-    assert si["resultados"] == no["resultados"]
+    assert [json.loads(fila[1]) for fila in db_si.historial] == [
+        evento for evento in si["resultados"] if not evento.get("optimizada")
+    ]
+    assert [
+        {clave: valor for clave, valor in evento.items() if clave != "optimizada"}
+        for evento in si["resultados"]
+    ] == no["resultados"]
     assert db_si.updates == 1
 
 
@@ -153,7 +158,7 @@ def test_no_muta_ir_original():
 
 
 def test_historial_contiene_solo_escrituras_fisicas(monkeypatch):
-    codigo = "ENCENDER led1\\nENCENDER led1\\nAPAGAR led1"
+    codigo = "ENCENDER led1\nENCENDER led1\nAPAGAR led1"
     _, respuesta, db, _ = ejecutar(monkeypatch, codigo, True)
     assert len(respuesta["resultados"]) == 3
     assert db.updates == 1
@@ -166,7 +171,7 @@ def test_historial_contiene_solo_escrituras_fisicas(monkeypatch):
 
 
 def test_sin_optimizacion_conserva_historial_completo(monkeypatch):
-    codigo = "ENCENDER led1\\nENCENDER led1"
+    codigo = "ENCENDER led1\nENCENDER led1"
     _, respuesta, db, _ = ejecutar(monkeypatch, codigo, False)
     assert db.updates == 2
     assert len(db.historial) == 2

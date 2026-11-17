@@ -180,11 +180,7 @@ function IconoDispositivo({
   );
 }
 
-function TarjetaDispositivo({
-  dispositivo,
-}: {
-  dispositivo: Dispositivo;
-}) {
+function TarjetaDispositivo({ dispositivo }: { dispositivo: Dispositivo }) {
   const activo = estadosActivos.has(dispositivo.estado);
 
   return (
@@ -205,7 +201,6 @@ function TarjetaDispositivo({
     </article>
   );
 }
-
 
 const accionesPorEstado: Record<string, string> = {
   ENCENDIDO: "ENCENDER",
@@ -473,10 +468,7 @@ export default function App() {
                 </p>
               ) : (
                 dispositivos.map((d) => (
-                  <TarjetaDispositivo
-                    key={d.identificador}
-                    dispositivo={d}
-                  />
+                  <TarjetaDispositivo key={d.identificador} dispositivo={d} />
                 ))
               )}
             </div>
@@ -649,8 +641,12 @@ export default function App() {
                           />
                         ) : (
                           <>
-                            <span className="evento-texto">{evento.detalle}</span>
-                            <span className="evento-estado">{evento.estado}</span>
+                            <span className="evento-texto">
+                              {evento.detalle}
+                            </span>
+                            <span className="evento-estado">
+                              {evento.estado}
+                            </span>
                           </>
                         )}
                         {evento.dispositivos && (
@@ -708,7 +704,13 @@ export default function App() {
                       <td>
                         <code>{item.instruccion}</code>
                       </td>
-                      <td className={item.estado_ejecucion === "ERROR" ? "celda-resultado-error" : undefined}>
+                      <td
+                        className={
+                          item.estado_ejecucion === "ERROR"
+                            ? "celda-resultado-error"
+                            : undefined
+                        }
+                      >
                         {typeof item.resultado === "object" &&
                         item.resultado !== null
                           ? item.resultado.detalle

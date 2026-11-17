@@ -23,3 +23,7 @@ frontend/.vite/
 Thumbs.db
 # generated
 *.log
+
+# Claves privadas para Web Push (volumen Docker en producción)
+**/.secrets/
+**/vapid_private.pem

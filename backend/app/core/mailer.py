@@ -55,6 +55,9 @@ def _resend(destinatario: str, mensaje: str) -> dict[str, str]:
         headers={
             "Authorization": f"Bearer {config.RESEND_API_KEY}",
             "Content-Type": "application/json",
+            "Accept": "application/json",
+            # El agente por defecto Python-urllib puede disparar Cloudflare 1010.
+            "User-Agent": "SmartHome/1.0 (Resend email integration)",
         },
         method="POST",
     )
@@ -62,11 +65,24 @@ def _resend(destinatario: str, mensaje: str) -> dict[str, str]:
         with urlopen(solicitud, timeout=10) as respuesta:
             resultado = json.load(respuesta)
     except HTTPError as error:
-        # Nunca incluir el cuerpo remoto, ya que puede contener datos sensibles.
-        if error.code in (401, 403):
-            descripcion = "Resend rechazó la autorización (HTTP %s). Revisa la API key y el dominio verificado." % error.code
+        # Diferenciar un rechazo de Cloudflare del rechazo JSON de Resend.
+        # No copiar el cuerpo íntegro al frontend: puede contener datos sensibles.
+        respuesta_error = error.read(1024)
+        if error.code == 403 and b"error code: 1010" in respuesta_error.lower():
+            descripcion = (
+                "Cloudflare bloqueó la solicitud a Resend (HTTP 403, error 1010). "
+                "El cliente HTTP fue rechazado antes de llegar a Resend."
+            )
+        elif error.code in (401, 403):
+            descripcion = (
+                "Resend rechazó la autorización (HTTP %s). "
+                "Revisa la API key y el dominio verificado." % error.code
+            )
         elif error.code in (400, 422):
-            descripcion = "Resend rechazó el correo (HTTP %s). Comprueba el remitente y la verificación DNS." % error.code
+            descripcion = (
+                "Resend rechazó el correo (HTTP %s). "
+                "Comprueba el remitente y la verificación DNS." % error.code
+            )
         else:
             descripcion = "Resend no pudo aceptar el envío (HTTP %s)." % error.code
         raise ErrorEnvioCorreo(descripcion) from error

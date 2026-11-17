@@ -190,6 +190,20 @@ ENVIAR CORREO A "tu-cuenta@gmail.com" MENSAJE "Hola desde SmartHome"
 - [Guia de la etapa 2 (Windows/PowerShell)](docs/GUIA_ETAPA_2.md)
 - [Publicacion inicial en GitHub](docs/github-proyecto.md)
 
+## HTTPS en el VPS (dominio SmartHome)
+
+Despliegue de producción: **https://smarthome.votaya.com.mx**, sin puerto 5173.
+Nginx/Apache del host sirve los archivos compilados de React y proxy /api hacia
+FastAPI local. El sitio requiere contraseña básica porque la API todavía no
+incluye autenticación propia. Docker Compose deja los puertos de desarrollo
+ligados a 127.0.0.1.
+
+Guía: [HTTPS VPS con Certbot y configuraciones Nginx/Apache](docs/DESPLIEGUE_HTTPS_VPS.md).
+
+Una vez configurado el proxy y el certificado, actualizar con:
+
+`git pull --ff-only origin main` y `bash deploy/actualizar-vps.sh`.
+
 ## Seguridad y limites
 
 - `.env` esta ignorado por Git. El archivo `.env.example` tiene credenciales de **desarrollo**, no de produccion.

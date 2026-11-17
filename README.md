@@ -194,9 +194,8 @@ ENVIAR CORREO A "tu-cuenta@gmail.com" MENSAJE "Hola desde SmartHome"
 
 Despliegue de producción: **https://smarthome.votaya.com.mx**, sin puerto 5173.
 Nginx/Apache del host sirve los archivos compilados de React y proxy /api hacia
-FastAPI local. El sitio requiere contraseña básica porque la API todavía no
-incluye autenticación propia. Docker Compose deja los puertos de desarrollo
-ligados a 127.0.0.1.
+FastAPI local. La web y la API están abiertas al público **sin usuario ni contraseña**.
+Docker Compose deja los puertos internos de desarrollo ligados a 127.0.0.1.
 
 Guía: [HTTPS VPS con Certbot y configuraciones Nginx/Apache](docs/DESPLIEGUE_HTTPS_VPS.md).
 

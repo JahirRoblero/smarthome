@@ -41,7 +41,8 @@ services:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./backend:/app
-    command: sh -c "python -m app.db.initialize && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+      - push_secrets:/app/.secrets
+    command: sh -c "python -m app.db.initialize && python -m app.core.push_notifications && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     depends_on:
       postgres:
         condition: service_healthy
@@ -66,3 +67,4 @@ services:
 volumes:
   postgres_data:
   frontend_node_modules:
+  push_secrets:

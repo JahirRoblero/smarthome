@@ -163,10 +163,12 @@ Consulta la [guía completa](docs/INTEGRACION_WEB_SMARTHOME.md).
 SmartHome permite usar `MAIL_PROVIDER=mailpit` (simulación local, predeterminado)
 o `MAIL_PROVIDER=resend` (envío a Gmail y otras direcciones reales).
 
-Para Resend, configura en tu **.env local** la clave `RESEND_API_KEY`,
-el remitente `RESEND_FROM_EMAIL=notificaciones@smarthome.votaya.com.mx`
-y una lista `RESEND_ALLOWED_RECIPIENTS` de destinatarios autorizados.
+Para Resend, configura en tu **.env local** la clave `RESEND_API_KEY`
+y el remitente `RESEND_FROM_EMAIL=notificaciones@smarthome.votaya.com.mx`.
+Puedes escribir cualquier dirección de correo válida, sin lista de destinatarios.
 Es indispensable verificar el dominio en Resend antes de intentar enviar.
+**Advertencia:** el sitio público no tiene autenticación, de modo que cualquier
+visitante podría iniciar un envío con la cuenta Resend configurada.
 
 Ejemplo de SmartHome Script:
 

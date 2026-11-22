@@ -1,6 +1,6 @@
-# Etapa 4 — Parser y AST
+# Analizador sintáctico y AST
 
-Implementación del analizador sintáctico para SmartHome Script 1.0 según `docs/Diseno_lenguaje_SmartHome.pdf`.
+Implementación del analizador sintáctico para SmartHome Script 1.0 según `docs/diseno-lenguaje-smarthome.pdf`.
 
 ## Módulos
 

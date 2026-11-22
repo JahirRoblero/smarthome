@@ -1,11 +1,11 @@
-# Etapa 3 · Analizador léxico SmartHome Script 1.0
+# Analizador léxico de SmartHome
 
 ## 1. Objetivo
 
 Implementar un analizador léxico para convertir un programa de instrucciones en
 una secuencia verificable de tokens, sin depender de React, FastAPI, PostgreSQL
 ni Mailpit. La especificación formal de referencia es
-`Diseno_lenguaje_SmartHome.pdf`, apartados 4 y 5.
+`diseno-lenguaje-smarthome.pdf`, apartados 4 y 5.
 
 ## 2. Archivos implementados
 

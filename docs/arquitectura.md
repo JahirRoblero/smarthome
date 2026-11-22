@@ -44,7 +44,7 @@ flowchart TD
 
 ## Reglas arquitectonicas
 
-1. La sintaxis se rige por `Diseno_lenguaje_SmartHome.pdf` (v1.0) y no debe cambiarse sin versionarla.
+1. La sintaxis se rige por `diseno-lenguaje-smarthome.pdf` (v1.0) y no debe cambiarse sin versionarla.
 2. El programa se valida completo antes de ejecutar cualquier instruccion.
 3. No se optimizan SEND_EMAIL ni NOTIFY ni las lecturas observables.
 4. El historial distingue instrucciones recibidas y operaciones fisicas cuando haya optimizacion.

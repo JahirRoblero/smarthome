@@ -1,4 +1,4 @@
-# HTTPS de SmartHome en VPS Ubuntu
+# Despliegue de SmartHome en VPS
 
 Dominio final: https://smarthome.votaya.com.mx (sin :5173).
 

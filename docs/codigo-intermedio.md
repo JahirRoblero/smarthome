@@ -1,4 +1,4 @@
-# Etapa 7 — Código intermedio (IR) de SmartHome Script 1.0
+# Código intermedio (IR)
 
 ## Objetivo
 

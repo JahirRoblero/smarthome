@@ -1,4 +1,4 @@
-# Etapa 2 — Publicación y verificación de arquitectura
+# Preparación del repositorio
 
 ## Objetivo
 

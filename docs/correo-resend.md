@@ -1,4 +1,4 @@
-# SmartHome: enviar correos reales a cualquier dirección con Resend
+# Envío de correo con Resend
 
 El comando del lenguaje **no cambia**:
 

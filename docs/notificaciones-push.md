@@ -1,4 +1,4 @@
-# Notificaciones reales (Web Push) — SmartHome
+# Notificaciones Web Push
 
 La instrucción `NOTIFICAR "mensaje"` ahora hace dos cosas:
 

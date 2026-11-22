@@ -1,4 +1,4 @@
-# SmartHome — Integración web, motor de ejecución e historial
+# Integración web de SmartHome
 
 Esta entrega conecta **React + FastAPI + PostgreSQL** y utiliza el lenguaje SmartHome Script 1.0 para controlar dispositivos simulados. La fase de **optimizaciones (Etapa 9)** todavía está pendiente: el ejecutor actual recibe IR validado sin optimización.
 
@@ -95,4 +95,4 @@ en `POST /api/compilar` y `POST /api/ejecutar`. Se conserva la respuesta
 lógica de todas las instrucciones, pero las asignaciones optimizadas sin
 `UPDATE` ya no se guardan en la tabla `historial`; las demás operaciones
 y los errores mantienen su registro. El historial preexistente no se borra.
-Más detalles: [Etapa 9](ETAPA_9_OPTIMIZACIONES.md).
+Más detalles: [Etapa 9](optimizaciones.md).

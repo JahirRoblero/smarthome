@@ -1,4 +1,4 @@
-# Etapa 9 — Optimización conservadora del código intermedio
+# Optimizaciones del código intermedio
 
 ## Objetivo
 

@@ -1,4 +1,4 @@
-# Etapa 5 — PostgreSQL y tabla de símbolos
+# PostgreSQL y tabla de símbolos
 
 ## Objetivo
 Guardar los cinco dispositivos de SmartHome en PostgreSQL y construir una tabla de símbolos en memoria. Todavía no se ejecutan comandos ni se envían correos.

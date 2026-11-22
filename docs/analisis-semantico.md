@@ -1,4 +1,4 @@
-# Etapa 6 — Análisis semántico de SmartHome Script 1.0
+# Análisis semántico
 
 ## Objetivo
 

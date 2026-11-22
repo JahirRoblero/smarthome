@@ -1,66 +1,160 @@
-# SmartHome Script · Proyecto integrador
+# SmartHome
 
-Aplicacion web de **Lenguajes y Automatas II** para interpretar instrucciones
-sobre dispositivos simulados. Tecnologias: **React + TypeScript**,
-**Python + FastAPI**, **PostgreSQL** y **Mailpit**, orquestadas con Docker Compose.
+Proyecto integrador de **Lenguajes y Autómatas II** del Instituto Tecnológico de Oaxaca.
 
-> **Estado actual: aplicación web integrada con ejecución IR, historial y notificaciones.**
-> SmartHome funciona desde React y conserva los estados en PostgreSQL.
-> Las **optimizaciones del IR** siguen pendientes (Etapa 9).
+SmartHome es una aplicación web que permite controlar dispositivos simulados con instrucciones escritas. El usuario escribe un comando en la consola, el intérprete revisa que sea válido y ejecuta la acción. Los cambios se muestran en la interfaz y se guardan en PostgreSQL.
 
-## Estructura
+- **Aplicación:** https://smarthome.votaya.com.mx/
+- **Video:** https://www.youtube.com/watch?v=YYJXMtfYT7o
+- **Kanban:** https://trello.com/b/7NeeEbkV
+
+## Qué hace el proyecto
+
+- Controla un LED, una luz, un ventilador, una alarma y una puerta.
+- Ejecuta varios comandos separados por saltos de línea.
+- Permite consultar estados y listar los dispositivos registrados.
+- Acepta condiciones sencillas con `SI ... ENTONCES ...`.
+- Identifica errores léxicos, sintácticos, semánticos y de ejecución.
+- Muestra el código intermedio y permite activar o desactivar las optimizaciones.
+- Guarda los estados e historial de operaciones en PostgreSQL.
+- Registra notificaciones y puede enviar avisos Web Push a navegadores suscritos.
+- Envía correos a Mailpit durante las pruebas o mediante Resend si está configurado.
+
+## Comandos disponibles
 
 ```text
-smarthome/
-├── frontend/                 React + TypeScript + Vite
-├── backend/                  FastAPI, intérprete, motor IR, persistencia y pruebas
-├── docs/                     Especificacion PDF, arquitectura, tablero, roles
-├── .github/                  CI, plantilla de PR e issues
-├── compose.yaml              React + FastAPI + PostgreSQL + Mailpit
-└── .env.example              Variables de entorno de desarrollo
+ENCENDER led1
+APAGAR luz_sala
+ACTIVAR alarma1
+DESACTIVAR alarma1
+ABRIR puerta_principal
+CERRAR puerta_principal
+CONSULTAR ventilador1
+LISTAR DISPOSITIVOS
+NOTIFICAR "Prueba de notificación"
+ENVIAR CORREO A "prueba@ejemplo.com" MENSAJE "Hola desde SmartHome"
+SI alarma1 == ACTIVADA ENTONCES NOTIFICAR "Alarma activada"
 ```
 
-## Requisitos
+Los comandos y estados van en mayúsculas; los identificadores de dispositivos, en minúsculas. El lenguaje tiene una gramática definida: no interpreta cualquier frase escrita en lenguaje natural.
 
-- Docker Desktop con Compose, **o** Python 3.12+, Node.js 22+, PostgreSQL 17 local.
-- Git para publicar y colaborar.
+## Cómo funciona
 
-## Inicio rapido con Docker (recomendado)
+```text
+Consola (React)
+     |
+     v
+API (FastAPI)
+     |
+     v
+Lexer -> Parser -> AST -> Análisis semántico
+     |
+     v
+Código intermedio -> Optimizador -> Ejecutor
+     |
+     v
+PostgreSQL / Mailpit / Resend / Web Push
+```
 
-1. Copiar variables: `cp .env.example .env` (Linux/macOS) o `Copy-Item .env.example .env` (PowerShell).
-2. Iniciar en la raiz: `docker compose up --build`.
-3. Verificar enlaces:
+El sistema valida el programa antes de ejecutar las instrucciones. El botón **Validar** revisa el código sin cambiar dispositivos; **Ver IR** permite consultar las operaciones intermedias.
 
-| Servicio | Direccion |
-|---|---|
-| Interfaz React | http://localhost:5173 |
-| API / Docs | http://localhost:8000/docs |
-| Ping backend | http://localhost:8000/api/ping |
-| Estado de servicios | http://localhost:8000/api/health |
-| Mailpit (buzon) | http://localhost:8025 |
-| PostgreSQL | localhost:5432 (desarrollo) |
+### Optimizaciones
 
-Detener: `docker compose down` (conserva BD); **no** usar `down -v` salvo que
-quiera borrar la base local. Si los puertos estan ocupados, cambie `.env`.
+El optimizador reduce escrituras de estado que no hacen falta:
 
-## Ejecucion SIN Docker (desarrollo local)
+- **Redundantes:** `ENCENDER led1` dos veces seguidas no necesita dos escrituras físicas.
+- **Sobrescritas:** `ENCENDER led1` seguido inmediatamente de `APAGAR led1` puede conservar solo el estado final, si no hay lecturas o efectos intermedios.
 
-Usar PostgreSQL local y crear usuario/base de datos definidos en `backend/app/core/config.py`,
-o establecer `DATABASE_URL` en el entorno. No es obligatorio tener Mailpit para mostrar
-la pagina; su conectividad SMTP se comprobara en una etapa posterior.
+Las instrucciones optimizadas siguen apareciendo en el resultado de la consola, pero no generan un cambio físico ni una fila de historial por esa operación omitida. Las consultas, condiciones, notificaciones y correos impiden que se combinen escrituras a través de ellas. También se pueden comparar los resultados con la optimización activada y desactivada.
 
-Terminal 1 (backend):
+Más información: [Optimizaciones](docs/optimizaciones.md).
+
+## Tecnologías
+
+| Componente | Herramientas |
+| --- | --- |
+| Interfaz | React, TypeScript, Vite |
+| API e intérprete | Python, FastAPI |
+| Base de datos | PostgreSQL 17 |
+| Correos | Mailpit, Resend |
+| Notificaciones | Web Push |
+| Contenedores | Docker, Docker Compose |
+| Pruebas e integración continua | pytest, GitHub Actions |
+| Organización del proyecto | Git, GitHub, Trello |
+
+## Instalación con Docker
+
+Se necesitan Git, Docker y Docker Compose.
+
+**1. Clonar el repositorio**
+
+```bash
+git clone https://github.com/JahirRoblero/smarthome.git
+cd smarthome
+```
+
+**2. Crear el archivo de configuración**
+
+En Linux o macOS:
+
+```bash
+cp .env.example .env
+```
+
+En PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Los valores de `.env.example` son para desarrollo. No deben utilizarse como credenciales de producción.
+
+**3. Iniciar los servicios**
+
+```bash
+docker compose up --build -d
+```
+
+Al iniciar, el backend prepara las tablas y los dispositivos sin sobrescribir los estados que ya estén guardados.
+
+**4. Abrir la aplicación**
+
+| Servicio | URL |
+| --- | --- |
+| SmartHome | http://localhost:5173 |
+| Documentación de API | http://localhost:8000/docs |
+| Estado del backend | http://localhost:8000/api/health |
+| Buzón de Mailpit | http://localhost:8025 |
+
+Para ver los contenedores o detenerlos:
+
+```bash
+docker compose ps
+docker compose down
+```
+
+Evita `docker compose down -v` si necesitas conservar la base de datos y las claves de Web Push.
+
+## Desarrollo local sin Docker
+
+Se requiere Python 3.12+, Node.js 22+ y PostgreSQL configurado. El backend necesita una conexión válida en `DATABASE_URL`.
+
+Backend:
 
 ```bash
 cd backend
 python -m venv .venv
-# Windows PowerShell: .venv\Scripts\Activate.ps1
-# Linux/macOS: source .venv/bin/activate
+```
+
+Activa el entorno virtual (en Linux/macOS con `source .venv/bin/activate` o en PowerShell con `.venv\Scripts\Activate.ps1`) y ejecuta:
+
+```bash
 pip install -r requirements-dev.txt
+python -m app.db.initialize
 uvicorn app.main:app --reload
 ```
 
-Terminal 2 (frontend):
+Frontend (en otra terminal, desde la raíz del proyecto):
 
 ```bash
 cd frontend
@@ -68,145 +162,93 @@ npm install
 npm run dev
 ```
 
-La interfaz de Vite usa proxy `/api` a `http://127.0.0.1:8000` por defecto.
-En Docker se configura el proxy hacia el servicio `backend`.
+## API
 
-## Pruebas (etapa 3)
+FastAPI permite consultar y probar los endpoints desde `http://localhost:8000/docs`.
+
+| Método | Ruta | Uso |
+| --- | --- | --- |
+| GET | `/api/dispositivos` | Listar dispositivos |
+| GET | `/api/dispositivos/{identificador}` | Consultar un dispositivo |
+| GET | `/api/tabla-simbolos` | Consultar la tabla de símbolos |
+| POST | `/api/analizar` | Validar el código y obtener el AST |
+| POST | `/api/compilar` | Generar código intermedio |
+| POST | `/api/ejecutar` | Ejecutar instrucciones |
+| GET | `/api/historial` | Consultar operaciones |
+| GET | `/api/notificaciones` | Consultar notificaciones |
+
+Ejemplo para `POST /api/ejecutar`:
+
+```json
+{
+  "codigo": "ENCENDER led1\nCONSULTAR led1",
+  "optimizar": true
+}
+```
+
+## Pruebas
+
+Las pruebas del backend se ejecutan con:
 
 ```bash
 cd backend
-pytest -q
+python -m pytest -q
 ```
+
+Para comprobar la compilación del frontend:
 
 ```bash
 cd frontend
 npm run build
 ```
 
-GitHub Actions ejecuta ambas validaciones automaticamente al hacer push/PR a
-`main` y `develop`.
+El repositorio incluye un flujo de GitHub Actions para ejecutar las pruebas, compilar el frontend y validar la configuración de Docker Compose en cambios a `main` y `develop`.
 
-### Demostrar el lexer (sin levantar Docker)
+## Correo y notificaciones
 
-```bash
-cd backend
-python -m app.interpreter.lexer --texto "ENCENDER led1"
-python -m app.interpreter.lexer --texto "ENCENDER led1@"
-python -m pytest -q tests/test_lexer.py
-```
+En desarrollo, `MAIL_PROVIDER=mailpit` envía el correo al buzón de pruebas en `http://localhost:8025`.
 
-Se muestran tokens y errores en JSON. El comando devuelve código de salida 1
-ante un error léxico, como debe ser. `parser.py` ya genera el AST sin ejecutar operaciones.
+Para solicitar envíos externos se puede configurar `MAIL_PROVIDER=resend`, `RESEND_API_KEY` y `RESEND_FROM_EMAIL` en el archivo `.env` del servidor. El dominio del remitente debe estar verificado. Que Resend acepte una solicitud no garantiza que el correo llegue a la bandeja de entrada.
 
-### Preparar PostgreSQL y mostrar los dispositivos
+Las notificaciones Web Push requieren permiso del navegador. Se pueden activar o desactivar desde la aplicación.
 
-Con Docker Compose el backend ejecuta la inicialización automáticamente:
+- [Configuración de Resend](docs/correo-resend.md)
+- [Notificaciones Web Push](docs/notificaciones-push.md)
 
-```bash
-docker compose up --build
-```
+**Aviso:** la aplicación pública no cuenta con inicio de sesión. No se deben utilizar sus comandos de correo y notificaciones para información privada o envíos masivos. Para un uso abierto más amplio hacen falta autenticación y límites de uso.
 
-Sin Docker, con PostgreSQL local preparado:
+## Despliegue en el VPS
+
+El proyecto cuenta con un script para actualizar la instalación en el servidor Ubuntu. Desde la carpeta del repositorio:
 
 ```bash
-cd backend
-python -m app.db.initialize
-uvicorn app.main:app --reload
+git pull --ff-only origin main
+bash deploy/actualizar-vps.sh
 ```
 
-Rutas: `/api/dispositivos`, `/api/dispositivos/{identificador}` y
-`/api/tabla-simbolos`. Se puede revisar la persistencia siguiendo
-`docs/ETAPA_5_POSTGRES_SIMBOLOS.md`.
+El script reconstruye los servicios, compila el frontend y publica los archivos estáticos sin borrar el volumen de PostgreSQL. La configuración de HTTPS y el servidor web se explica en [despliegue-vps.md](docs/despliegue-vps.md).
 
-## Análisis semántico (Etapa 6)
+## Documentación
 
-Desde Bruno enviar **POST** a `http://localhost:8000/api/analizar` con Body JSON:
-
-```json
-{"codigo":"ENCENDER led1\nCONSULTAR led1"}
-```
-
-La API responde con AST validado o con errores LEXICO, SINTACTICO o SEMANTICO
-ubicados por línea y columna. Este análisis **no cambia estados ni envía correos**.
-
-### Generación de código intermedio (Etapa 7)
-
-Enviar POST a `http://localhost:8000/api/compilar` con Body JSON:
-
-```json
-{"codigo":"ENCENDER led1\nSI led1 == ENCENDIDO ENTONCES APAGAR led1"}
-```
-
-El IR contiene instrucciones numeradas, temporales y saltos condicionales.
-No modifica los estados ni envía correos. Más detalles en
-`docs/ETAPA_7_CODIGO_INTERMEDIO.md`.
-
-### Aplicación web y ejecución de SmartHome
-
-Tras `docker compose up --build -d`, entrar en `http://localhost:5173`.
-La consola permite ejecutar instrucciones y muestra resultados, historial y
-notificaciones guardados. Los botones rápidos utilizan el mismo intérprete.
-
-Enviar POST a `http://localhost:8000/api/ejecutar` con JSON:
-
-```json
-{"codigo":"ENCENDER led1\nCONSULTAR led1"}
-```
-
-La API valida todo el programa, genera el IR y lo ejecuta. También están
-disponibles GET `/api/historial` y GET `/api/notificaciones`.
-
-Consulta la [guía completa](docs/INTEGRACION_WEB_SMARTHOME.md).
-
-### Enviar correo real con Resend
-
-SmartHome permite usar `MAIL_PROVIDER=mailpit` (simulación local, predeterminado)
-o `MAIL_PROVIDER=resend` (envío a Gmail y otras direcciones reales).
-
-Para Resend, configura en tu **.env local** la clave `RESEND_API_KEY`
-y el remitente `RESEND_FROM_EMAIL=notificaciones@smarthome.votaya.com.mx`.
-Puedes escribir cualquier dirección de correo válida, sin lista de destinatarios.
-Es indispensable verificar el dominio en Resend antes de intentar enviar.
-**Advertencia:** el sitio público no tiene autenticación, de modo que cualquier
-visitante podría iniciar un envío con la cuenta Resend configurada.
-
-Ejemplo de SmartHome Script:
-
-```text
-ENVIAR CORREO A "tu-cuenta@gmail.com" MENSAJE "Hola desde SmartHome"
-```
-
-[Guía completa de configuración con GoDaddy, Resend y Docker](docs/RESEND_EMAIL.md).
-
-## Documentacion y plan de desarrollo
-
-- [Diseno formal del lenguaje](docs/Diseno_lenguaje_SmartHome.pdf)
-- [Etapa 7: Código intermedio (IR)](docs/ETAPA_7_CODIGO_INTERMEDIO.md)
-- [Etapa 6: Análisis semántico](docs/ETAPA_6_ANALISIS_SEMANTICO.md)
-- [Etapa 5: PostgreSQL y tabla de símbolos](docs/ETAPA_5_POSTGRES_SIMBOLOS.md)
-- [Etapa 4: Parser y AST](docs/ETAPA_4_PARSER_AST.md)
-- [Etapa 3: Lexer, ejemplos y pruebas](docs/ETAPA_3_LEXER.md)
-- [Arquitectura y limites](docs/arquitectura.md)
+- [Diseño del lenguaje](docs/diseno-lenguaje-smarthome.pdf)
+- [Arquitectura](docs/arquitectura.md)
+- [Analizador léxico](docs/analisis-lexico.md)
+- [Parser y AST](docs/parser-y-ast.md)
+- [PostgreSQL y tabla de símbolos](docs/postgresql-y-simbolos.md)
+- [Análisis semántico](docs/analisis-semantico.md)
+- [Código intermedio](docs/codigo-intermedio.md)
+- [Optimizaciones](docs/optimizaciones.md)
+- [Integración de la aplicación](docs/integracion-web.md)
+- [Configuración inicial del repositorio](docs/configuracion-repositorio.md)
 - [Roles del equipo](docs/roles-equipo.md)
-- [Tareas Kanban](docs/kanban.csv)
-- [Guia de la etapa 2 (Windows/PowerShell)](docs/GUIA_ETAPA_2.md)
-- [Publicacion inicial en GitHub](docs/github-proyecto.md)
+- [Kanban](docs/kanban.md)
 
-## HTTPS en el VPS (dominio SmartHome)
+## Equipo
 
-Despliegue de producción: **https://smarthome.votaya.com.mx**, sin puerto 5173.
-Nginx/Apache del host sirve los archivos compilados de React y proxy /api hacia
-FastAPI local. La web y la API están abiertas al público **sin usuario ni contraseña**.
-Docker Compose deja los puertos internos de desarrollo ligados a 127.0.0.1.
+Proyecto desarrollado para Lenguajes y Autómatas II, grupo **7SA**, Instituto Tecnológico de Oaxaca.
 
-Guía: [HTTPS VPS con Certbot y configuraciones Nginx/Apache](docs/DESPLIEGUE_HTTPS_VPS.md).
-
-Una vez configurado el proxy y el certificado, actualizar con:
-
-`git pull --ff-only origin main` y `bash deploy/actualizar-vps.sh`.
-
-## Seguridad y limites
-
-- `.env` esta ignorado por Git. El archivo `.env.example` tiene credenciales de **desarrollo**, no de produccion.
-- Nunca use Mailpit para enviar correos reales ni exponga este compose local a Internet.
-- No implementa autenticacion, sensores fisicos ni variables de usuario.
+- Antonio Contreras Alan
+- Aparicio Ingrid
+- Gandarillas Melissa
+- Gómez Roblero Angel Jahir
+- López Herrera Noel

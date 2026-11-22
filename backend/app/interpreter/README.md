@@ -1,6 +1,6 @@
 # Intérprete SmartHome Script 1.0
 
-La sintaxis oficial es `docs/Diseno_lenguaje_SmartHome.pdf`.
+La sintaxis oficial es `docs/diseno-lenguaje-smarthome.pdf`.
 
 ## Implementado — Etapa 3 (Lexer)
 

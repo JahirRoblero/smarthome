@@ -247,8 +247,12 @@ El script reconstruye los servicios, compila el frontend y publica los archivos 
 
 Proyecto desarrollado para Lenguajes y Autómatas II, grupo **7SA**, Instituto Tecnológico de Oaxaca.
 
-- Antonio Contreras Alan
-- Aparicio Ingrid
-- Gandarillas Melissa
-- Gómez Roblero Angel Jahir
-- López Herrera Noel
+| Integrante | Rol | Responsabilidades |
+| --- | --- | --- |
+| Angel Jahir Gomez Roblero | Líder técnico y DevOps | Arquitectura, integración del sistema, Docker, pruebas y seguimiento del proyecto |
+| Antonio Contreras Alan | Desarrollador backend | API con FastAPI, PostgreSQL, servicios y ejecución de instrucciones |
+| Aparicio Ingrid | Desarrolladora frontend | Consola de instrucciones, panel de dispositivos e interfaz en React |
+| Gandarillas Melissa | Desarrolladora de lenguaje | Analizador léxico, parser, gramática y AST |
+| López Herrera Noel | Desarrollador semántico | Tabla de símbolos, validaciones, código intermedio y optimizaciones |
+
+La distribución agrupa algunas funciones porque el equipo está formado por cinco integrantes.

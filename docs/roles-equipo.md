@@ -1,20 +1,17 @@
-# Distribucion de responsabilidades (6 integrantes)
+# Roles del equipo
 
-| Rol | Responsabilidad | Entregable verificable |
-|---|---|---|
-| Lider tecnico | Arquitectura, repo, CI, integracion y seguimiento | PRs revisados, README, tablero |
-| Frontend | React, consola, panel, estados, errores, historial | Pantallas y pruebas de integracion |
-| Backend/API | FastAPI, PostgreSQL, servicios SMTP | Endpoints y persistencia |
-| Lenguaje | Lexer, parser, AST, gramática y errores | Modulos e implementacion de tests |
-| Semantica | Tabla de simbolos, tipos, validaciones y generacion de IR | Pruebas semanticas e IR |
-| Ejecucion/DevOps | Optimizador, ejecutor, Docker y pruebas | Pruebas de equivalencia y contenedores |
+Distribución propuesta de responsabilidades para SmartHome, grupo 7SA.
 
-Si son 5 integrantes, combinar **lider tecnico + backend**, manteniendo las contribuciones
-individuales en git. Asignar nombres reales en el tablero cuando el equipo lo decida.
+| Integrante | Rol | Responsabilidades |
+| --- | --- | --- |
+| Angel Jahir Gomez Roblero | Líder técnico y DevOps | Arquitectura, integración, seguimiento, Docker y pruebas |
+| Antonio Contreras Alan | Desarrollador backend | API, persistencia en PostgreSQL, servicios y ejecución |
+| Aparicio Ingrid | Desarrolladora frontend | Consola, panel de dispositivos e interfaz con React |
+| Gandarillas Melissa | Desarrolladora de lenguaje | Lexer, parser, AST y gramática |
+| López Herrera Noel | Desarrollador semántico | Tabla de símbolos, validación semántica, IR y optimizador |
 
-## Regla de colaboracion
+Se combinaron responsabilidades para repartir los seis perfiles sugeridos en la consigna entre los cinco integrantes.
 
-- Trabajar en `feature/...`; abrir PR contra `develop`.
-- Un compañero revisa el PR; no subir cambios a `main` directamente.
-- Integrar `develop` a `main` solo cuando se pruebe una entrega.
-- Cada tarjeta tiene responsable, descripcion y criterios de aceptacion.
+## Organización del trabajo
+
+Las actividades se registran en el tablero Kanban y los cambios de código en GitHub. Cada integrante puede trabajar en sus módulos y revisar las integraciones del equipo.
